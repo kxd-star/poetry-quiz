@@ -1,0 +1,2200 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>中国诗词大会 · 沉浸式练习</title>
+  <meta name="description" content="中国诗词大会风格沉浸式练习：诗句补全、选词填空、计时挑战。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg0:#f0fdf4;
+      --bg1:#ffffff;
+      --ink:#dcfce7;
+      --paper:#ffffff;
+      --paper2:#f8fafc;
+      --gold:#059669;
+      --gold2:#064e3b;
+      --jade:#065f46;
+      --crimson:#dc2626;
+      --fg:#111;
+      --muted:#4b5563;
+      --shadow: rgba(6, 78, 59, 0.1);
+      --radius: 20px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: "Noto Serif SC", ui-serif, "Songti SC", serif;
+      color: var(--fg);
+      background: radial-gradient(1200px 800px at 70% 20%, rgba(52, 211, 153, 0.15), transparent 60%),
+                  radial-gradient(900px 700px at 20% 70%, rgba(16, 185, 129, 0.1), transparent 55%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    /* subtle grain */
+    body:before{
+      content:"";
+      position:fixed; inset:-20px;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.15'/%3E%3C/svg%3E");
+      mix-blend-mode:multiply;
+      opacity:.1;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    /* drifting clouds */
+    .ink{
+      position:fixed; inset:-30vh -30vw;
+      z-index:0; pointer-events:none;
+      filter: blur(60px);
+      opacity:.4;
+      background:
+        radial-gradient(400px 260px at 20% 30%, rgba(187, 247, 208, 0.4), transparent 70%),
+        radial-gradient(520px 320px at 70% 60%, rgba(167, 243, 208, 0.4), transparent 70%),
+        radial-gradient(480px 380px at 55% 25%, rgba(209, 250, 229, 0.4), transparent 70%);
+      animation: drift 20s ease-in-out infinite;
+    }
+    @keyframes drift{
+      0%{transform: translate3d(-2%, -1%, 0) scale(1)}
+      50%{transform: translate3d(2%, 1.5%, 0) scale(1.05)}
+      100%{transform: translate3d(-2%, -1%, 0) scale(1)}
+    }
+
+    .wrap{position:relative; z-index:1; min-height:100%; display:flex; align-items:center; justify-content:center; padding:28px}
+
+    .stage{
+      width:min(980px, 100%);
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:18px;
+      align-items:stretch;
+    }
+
+    @media (max-width: 900px){
+      .stage{grid-template-columns:1fr;}
+    }
+
+    .panel{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid rgba(215,180,106,.22);
+      box-shadow: 0 18px 60px var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .panel:after{
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(900px 400px at 30% 10%, rgba(243,215,154,.10), transparent 55%),
+                  radial-gradient(700px 380px at 80% 90%, rgba(159,212,198,.08), transparent 55%);
+      pointer-events:none;
+    }
+
+    .left{
+      padding:22px 22px 18px;
+    }
+
+    .right{
+      padding:18px 18px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .brand{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+      padding-bottom:12px;
+      border-bottom:1px solid rgba(215,180,106,.18);
+      margin-bottom:14px;
+    }
+
+    .brand h1{
+      margin:0;
+      font-family: "Ma Shan Zheng", cursive;
+      font-weight: 400;
+      font-size: 44px;
+      letter-spacing: 1px;
+      line-height:1;
+      color: var(--gold2);
+      text-shadow: 0 10px 30px rgba(215,180,106,.18);
+    }
+
+    .brand .sub{
+      text-align:right;
+      color: #555;
+      font-size: 13px;
+      line-height:1.3;
+    }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.3);
+      border: 1px solid rgba(215,180,106,.22);
+      color: #333;
+      font-size: 12px;
+      white-space:nowrap;
+    }
+
+    .badge i{
+      width:8px; height:8px; border-radius:50%;
+      background: linear-gradient(180deg, var(--gold2), var(--gold));
+      box-shadow: 0 0 0 4px rgba(215,180,106,.16);
+    }
+
+    .card{
+      position:relative;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.10);
+      padding:16px;
+    }
+
+    .meta{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+      margin-bottom:10px;
+    }
+
+    .meta .poem{
+      display:flex; flex-direction:column; gap:2px;
+      max-width: 70%;
+    }
+
+    .meta .poem .t{
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing:.3px;
+      color: #111;
+    }
+
+    .meta .poem .a{
+      font-size: 13px;
+      color: #666;
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.4);
+      border:1px solid rgba(6,78,59,.18);
+      color: #333;
+      font-size: 12px;
+    }
+
+    .pill strong{color: var(--jade); font-weight:700; letter-spacing:.4px}
+
+    .question{
+      margin-top:12px;
+      font-size: 22px;
+      line-height: 1.9;
+      letter-spacing: .6px;
+      color: #111;
+    }
+
+    .blank{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 110px;
+      padding: 2px 10px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(215,180,106,.18), rgba(0,0,0,.12));
+      border: 1px dashed rgba(243,215,154,.48);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+      color: #111;
+      font-weight:700;
+      transform: translateY(-2px);
+    }
+
+    .options{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 520px){
+      .options{grid-template-columns: 1fr;}
+      .meta .poem{max-width:100%}
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      border-radius: 14px;
+      padding: 12px 12px;
+      cursor:pointer;
+      text-align:left;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border: 1px solid rgba(215,180,106,.20);
+      color: #111;
+      box-shadow: 0 10px 28px rgba(0,0,0,.18);
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .btn:before{
+      content:"";
+      position:absolute; inset:-40px;
+      background: radial-gradient(240px 160px at 20% 20%, rgba(243,215,154,.12), transparent 60%),
+                  radial-gradient(220px 160px at 80% 90%, rgba(159,212,198,.10), transparent 60%);
+      opacity:.8;
+      transition: opacity .18s ease;
+    }
+
+    .btn:hover{transform: translateY(-2px); border-color: rgba(243,215,154,.55);}
+    .btn:hover:before{opacity:1}
+    .btn:active{transform: translateY(0px)}
+
+    .btn .k{position:relative; z-index:1; font-weight:700; letter-spacing:.4px}
+    .btn .hint{position:relative; z-index:1; display:block; margin-top:4px; font-size:12px; color: #666}
+
+    .btn.correct{
+      border-color: rgba(6,95,70,.45);
+      background: linear-gradient(180deg, rgba(16,185,129,.16), rgba(255,255,255,.65));
+    }
+    .btn.wrong{
+      border-color: rgba(220,38,38,.55);
+      background: linear-gradient(180deg, rgba(239,68,68,.14), rgba(255,255,255,.65));
+    }
+
+    .controls{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+      margin-top: 14px;
+    }
+
+    .primary{
+      appearance:none; border:none; cursor:pointer;
+      border-radius: 999px;
+      padding: 11px 14px;
+      color: #ffffff;
+      font-weight: 800;
+      letter-spacing:.6px;
+      background: linear-gradient(180deg, var(--gold2), var(--gold));
+      box-shadow: 0 16px 40px rgba(215,180,106,.26);
+      transition: transform .18s ease, filter .18s ease;
+      white-space:nowrap;
+    }
+    .primary:hover{transform: translateY(-2px); filter: brightness(1.02)}
+    .ghost{
+      appearance:none; border:none; cursor:pointer;
+      border-radius: 999px;
+      padding: 10px 12px;
+      color: #333;
+      background: rgba(255,255,255,.3);
+      border:1px solid rgba(6,78,59,.14);
+      transition: transform .18s ease, border-color .18s ease;
+    }
+    .ghost:hover{transform: translateY(-2px); border-color: rgba(243,215,154,.45)}
+
+    .sideTitle{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .sideTitle h2{
+      margin:0;
+      font-size: 14px;
+      letter-spacing: .6px;
+      color: #333;
+      text-transform: uppercase;
+    }
+
+    .statGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat{
+      border-radius: 16px;
+      background: rgba(255,255,255,.3);
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .stat:before{
+      content:"";
+      position:absolute; inset:-40px;
+      background: radial-gradient(260px 160px at 30% 20%, rgba(243,215,154,.10), transparent 60%);
+      opacity:.9;
+    }
+    .stat .v{position:relative; z-index:1; font-size: 22px; font-weight: 800; letter-spacing:.8px; color: var(--gold2)}
+    .stat .k{position:relative; z-index:1; margin-top:4px; font-size: 12px; color: #666}
+
+    .timeline{
+      border-radius: 16px;
+      background: rgba(255,255,255,.3);
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 12px;
+    }
+
+    .bar{
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      overflow:hidden;
+      border: 1px solid rgba(215,180,106,.18);
+    }
+
+    .bar > span{
+      display:block;
+      height:100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(159,212,198,.85), rgba(243,215,154,.95));
+      box-shadow: 0 10px 30px rgba(243,215,154,.20);
+      transition: width .25s ease;
+    }
+
+    .small{
+      color: #666;
+      font-size: 12px;
+      line-height:1.5;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%) translateY(30px);
+      opacity: 0;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(6,78,59,.22);
+      color: #111;
+      box-shadow: 0 18px 50px rgba(0,0,0,.15);
+      z-index: 10;
+      transition: opacity .22s ease, transform .22s ease;
+      max-width: min(720px, 92vw);
+      text-align:center;
+    }
+    .toast.show{opacity:1; transform: translateX(-50%) translateY(0)}
+
+    .startOverlay{
+      position: absolute;
+      inset: 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 20px;
+      background: rgba(255,255,255,.9); /* 让加载时不至于完全漆黑 */
+      z-index: 100;
+    }
+
+    .startOverlay:after {
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(900px 420px at 50% 40%, rgba(215,180,106,.15), transparent 60%);
+      pointer-events:none;
+    }
+
+    .startBox{
+      width:min(560px, 100%);
+      border-radius: 18px;
+      border:1px solid rgba(6,78,59,.22);
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 22px 70px rgba(0,0,0,.15);
+      padding: 18px;
+      position:relative;
+      overflow:hidden;
+    }
+    .startBox:before{
+      content:"";
+      position:absolute; inset:-60px;
+      background: radial-gradient(420px 240px at 20% 20%, rgba(243,215,154,.14), transparent 60%),
+                  radial-gradient(360px 240px at 80% 80%, rgba(159,212,198,.10), transparent 60%);
+      opacity:.9;
+    }
+    .startBox > *{position:relative; z-index:1}
+
+    .startBox .title{
+      font-family: "Ma Shan Zheng", cursive;
+      font-size: 42px;
+      margin: 6px 0 4px;
+      color: var(--gold2);
+      letter-spacing: 1px;
+    }
+    .startBox .desc{margin:0; color: #555; line-height:1.7; font-size: 13px}
+
+    .row{display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-top: 14px}
+
+    .toggle{
+      display:flex; align-items:center; gap:10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.6);
+      border: 1px solid rgba(6,78,59,.14);
+      user-select:none;
+    }
+    .toggle input{accent-color: var(--gold)}
+
+    .footer{
+      margin-top: 10px;
+      display:flex; flex-wrap:wrap;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      color: #666;
+      font-size: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(6,78,59,.14);
+    }
+
+    a{color: rgba(243,215,154,.92); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    .srOnly{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0}
+
+    .revealPanel{
+      margin-top: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(6,78,59,.14);
+      padding: 12px;
+    }
+    .revealPanel .lab{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .revealPanel .fullLine{
+      font-size: 16px;
+      line-height: 1.9;
+      letter-spacing: .4px;
+      color: #111;
+    }
+    .revealPanel .explain{
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #333;
+    }
+    .sources {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed rgba(6,78,59,0.2);
+    }
+    .sources h3 {
+      font-size: 13px;
+      color: var(--gold2);
+      margin: 0 0 10px 0;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .source-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .source-item {
+      font-size: 12px;
+      background: rgba(255,255,255,0.4);
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(215,180,106,0.12);
+      line-height: 1.5;
+    }
+    .source-item .opt-text {
+      font-weight: 700;
+      color: #111;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .source-item .opt-meta {
+      color: #666;
+      font-size: 11px;
+      display: block;
+      margin-top: 2px;
+    }
+    .source-item .opt-hint {
+      display: block;
+      margin-top: 4px;
+      color: #888;
+      font-style: italic;
+    }
+    .source-item.is-correct {
+      border-color: rgba(16,185,129,0.3);
+      background: rgba(16,185,129,0.05);
+    }
+    .source-item.is-correct .opt-text {
+      color: var(--gold2);
+    }
+  </style>
+</head>
+<body>
+  <div class="ink"></div>
+
+  <div class="wrap">
+    <div class="stage">
+      <section class="panel left" aria-label="练习区">
+        <div class="brand">
+          <div>
+            <h1>诗词接龙</h1>
+          </div>
+          <div class="sub">
+            <div class="badge" title="轻量题库 · 无复杂校验"><i></i> 基础题库 · 深度沉浸</div>
+            <div style="margin-top:6px">句式对接 / 限时挑战 / 意境领会</div>
+          </div>
+        </div>
+
+        <div class="card" id="qCard">
+          <div class="meta">
+            <div class="poem">
+              <div class="t" id="poemTitle">—</div>
+              <div class="a" id="poemAuthor">—</div>
+            </div>
+            <div class="pill" title="当前回合">
+              <span>回合</span>
+              <strong id="round">1</strong>
+              <span>/</span>
+              <span id="total">10</span>
+            </div>
+          </div>
+
+          <div class="question" id="questionText">
+            <div style="font-size:14px; color:var(--muted); margin-bottom:8px;">请接下一句：</div>
+            <div id="stemContent">加载中…</div>
+          </div>
+
+          <div class="options" id="options"></div>
+
+          <div class="controls">
+            <button class="ghost" id="skipBtn">跳过</button>
+            <div style="display:flex; gap:10px; align-items:center">
+              <button class="ghost" id="revealBtn" title="展示正确答案（不加分）">揭晓</button>
+              <button class="primary" id="nextBtn" disabled>下一题</button>
+            </div>
+          </div>
+
+          <div class="revealPanel" id="revealPanel" hidden aria-label="诗句与解析">
+            <div class="lab">
+              <span>完整诗句</span>
+              <span class="srOnly" id="revealSr">作答后显示作者、标题与解析</span>
+            </div>
+            <div class="fullLine" id="fullLine">—</div>
+            <div class="explain" id="explain">—</div>
+            <div class="sources" id="sourcesPanel">
+              <h3 id="sourcesTitle">干扰项溯源</h3>
+              <div class="source-list" id="sourceList"></div>
+            </div>
+          </div>
+
+          <div class="startOverlay" id="startOverlay">
+            <div class="startBox" role="dialog" aria-modal="true" aria-label="开始练习">
+              <div class="title">设置</div>
+              <p class="desc">
+                你将进入一段“舞台式”的<strong>诗句接龙</strong>练习：根据上句接出下句。<br/>
+                干扰项经过精选，字数与意境相近，挑战你的记忆力。
+              </p>
+              <div class="row">
+                <label class="toggle">
+                  <input type="checkbox" id="timerToggle" checked>
+                  <span>启用计时（每题 <span id="secLabel">15</span>s）</span>
+                </label>
+                <label class="toggle">
+                  <input type="checkbox" id="soundToggle" checked>
+                  <span>提示音（开启）</span>
+                </label>
+              </div>
+              <div class="row">
+                <button class="ghost" id="resetBtn" title="清空本地记录">清空记录</button>
+                <button class="primary" id="startBtn">开始练习</button>
+              </div>
+              <div class="footer">
+                <span>提示：键盘 1/2/3/4 可选项；Enter 下一题。</span>
+                <span>数据：精选常见名篇（题库内置）</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel right" aria-label="数据面板">
+        <div class="sideTitle">
+          <h2>练习仪表</h2>
+          <div class="badge" title="本地保存"><i></i> 记录保存在浏览器</div>
+        </div>
+
+        <div class="statGrid">
+          <div class="stat">
+            <div class="v" id="score">0</div>
+            <div class="k">得分</div>
+          </div>
+          <div class="stat">
+            <div class="v" id="streak">0</div>
+            <div class="k">连对</div>
+          </div>
+          <div class="stat">
+            <div class="v" id="acc">—</div>
+            <div class="k">正确率</div>
+          </div>
+          <div class="stat">
+            <div class="v" id="best">—</div>
+            <div class="k">历史最高</div>
+          </div>
+        </div>
+
+        <div class="timeline">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
+            <div style="font-weight:800; letter-spacing:.6px; color: #333">本题时间</div>
+            <div class="pill" title="剩余时间">
+              <span>剩余</span>
+              <strong id="timeLeft">—</strong>
+              <span>s</span>
+            </div>
+          </div>
+          <div style="margin-top:10px" class="bar" aria-label="时间进度">
+            <span id="timeBar"></span>
+          </div>
+          <div style="margin-top:10px" class="small" id="hintBox">在字里行间，找回熟悉的韵律。</div>
+        </div>
+
+        <div class="timeline">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
+            <div style="font-weight:800; letter-spacing:.6px; color: #333">回合进度</div>
+            <div class="pill" title="已完成">
+              <span>已答</span>
+              <strong id="done">0</strong>
+              <span>/</span>
+              <span id="total2">10</span>
+            </div>
+          </div>
+          <div style="margin-top:10px" class="bar" aria-label="回合进度">
+            <span id="roundBar"></span>
+          </div>
+          <div style="margin-top:10px" class="small">每题 4 选 1，答对 +10；连对额外加成。</div>
+        </div>
+
+        <div class="timeline">
+          <div style="font-weight:800; letter-spacing:.6px; color: #333">快捷键</div>
+          <div class="small" style="margin-top:8px">
+            <div>1/2/3/4：选择选项</div>
+            <div>Enter：下一题</div>
+            <div>Space：跳过</div>
+            <div>R：揭晓</div>
+          </div>
+        </div>
+
+        <div class="small" style="margin-top:auto; padding-top:8px; opacity:.88">
+          “诗有别才，非关书也。”——这是练习，不是审判。
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /**
+     * 题库原则：只用常见、无歧义、已确认无误的名篇名句。
+     * 题型：选词补全（单空），不做平仄/字数等复杂校验。
+     */
+    const BANK = [
+      {
+        title: "关雎",
+        author: "《诗经》",
+        line: "关关雎鸠，在河之洲。窈窕淑女，君子好逑。参差荇菜，左右流之。窈窕淑女，寤寐求之。",
+        hint: "《诗经》开篇，以雎鸠起兴，写求偶之思。"
+      },
+      {
+        title: "蒹葭",
+        author: "《诗经》",
+        line: "蒹葭苍苍，白露为霜。所谓伊人，在水一方。溯洄从之，道阻且长。溯游从之，宛在水中央。",
+        hint: "可望而不可即的追寻。"
+      },
+      {
+        title: "氓（节选）",
+        author: "《诗经》",
+        line: "桑之未落，其叶沃若。于嗟鸠兮，无食桑葚。于嗟女兮，无与士耽。士之耽兮，犹可说也。",
+        hint: "劝诫女子勿为爱情所困。"
+      },
+      {
+        title: "观沧海",
+        author: "曹操 · 汉",
+        line: "东临碣石，以观沧海。水何澹澹，山岛竦峙。树木丛生，百草丰茂。秋风萧瑟，洪波涌起。",
+        hint: "以海景写胸襟，气象宏阔。"
+      },
+      {
+        title: "木兰诗（节选）",
+        author: "《乐府诗集》",
+        line: "唧唧复唧唧，木兰当户织。不闻机杼声，惟闻女叹息。问女何所思，问女何所忆。",
+        hint: "叙事诗开篇，家国与儿女情并举。"
+      },
+      {
+        title: "饮酒·其五（节选）",
+        author: "陶渊明 · 晋",
+        line: "结庐在人境，而无车马喧。问君何能尔，心远地自偏。采菊东篱下，悠然见南山。",
+        hint: "心远则境自静，名句“采菊东篱下”。"
+      },
+      {
+        title: "归园田居·其一（节选）",
+        author: "陶渊明 · 晋",
+        line: "少无适俗韵，性本爱丘山。误落尘网中，一去三十年。羁鸟恋旧林，池鱼思故渊。",
+        hint: "厌俗归隐，借“羁鸟”“池鱼”写羁绊。"
+      },
+      {
+        title: "登幽州台歌",
+        author: "陈子昂 · 唐",
+        line: "前不见古人，后不见来者。念天地之悠悠，独怆然而涕下。",
+        hint: "千古孤愤，一瞬苍茫。"
+      },
+      {
+        title: "次北固山下",
+        author: "王湾 · 唐",
+        line: "客路青山外，行舟绿水前。潮平两岸阔，风正一帆悬。海日生残夜，江春入旧年。",
+        hint: "“海日生残夜，江春入旧年”写时序更迭。"
+      },
+      {
+        title: "使至塞上",
+        author: "王维 · 唐",
+        line: "单车欲问边，属国过居延。征蓬出汉塞，归雁入胡天。大漠孤烟直，长河落日圆。",
+        hint: "边塞名句“大漠孤烟直”。"
+      },
+      {
+        title: "闻王昌龄左迁龙标遥有此寄",
+        author: "李白 · 唐",
+        line: "杨花落尽子规啼，闻道龙标过五溪。我寄愁心与明月，随君直到夜郎西。",
+        hint: "借明月寄相思与慰藉。"
+      },
+      {
+        title: "望岳（节选）",
+        author: "杜甫 · 唐",
+        line: "岱宗夫如何，齐鲁青未了。造化钟神秀，阴阳割昏晓。会当凌绝顶，一览众山小。",
+        hint: "“会当凌绝顶”是少年壮志。"
+      },
+      {
+        title: "春望",
+        author: "杜甫 · 唐",
+        line: "国破山河在，城春草木深。感时花溅泪，恨别鸟惊心。烽火连三月，家书抵万金。",
+        hint: "乱世家国之痛，沉郁顿挫。"
+      },
+      {
+        title: "登高（节选）",
+        author: "杜甫 · 唐",
+        line: "无边落木萧萧下，不尽长江滚滚来。万里悲秋常作客，百年多病独登台。艰难苦恨繁霜鬓，潦倒新停浊酒杯。",
+        hint: "“无边落木”“不尽长江”对仗壮阔。"
+      },
+      {
+        title: "月夜忆舍弟",
+        author: "杜甫 · 唐",
+        line: "戍鼓断人行，边秋一雁声。露从今夜白，月是故乡明。有弟皆分散，无家问死生。",
+        hint: "“月是故乡明”最为传诵。"
+      },
+      {
+        title: "白雪歌送武判官归京（节选）",
+        author: "岑参 · 唐",
+        line: "北风卷地白草折，胡天八月即飞雪。忽如一夜春风来，千树万树梨花开。",
+        hint: "以梨花喻雪，奇崛瑰丽。"
+      },
+      {
+        title: "送元二使安西",
+        author: "王维 · 唐",
+        line: "渭城朝雨浥轻尘，客舍青青柳色新。劝君更尽一杯酒，西出阳关无故人。",
+        hint: "送别绝唱，“阳关无故人”。"
+      },
+      {
+        title: "望洞庭湖赠张丞相（节选）",
+        author: "孟浩然 · 唐",
+        line: "气蒸云梦泽，波撼岳阳城。欲济无舟楫，端居耻圣明。",
+        hint: "写洞庭气势，寄望入仕。"
+      },
+      {
+        title: "酬乐天扬州初逢席上见赠（节选）",
+        author: "刘禹锡 · 唐",
+        line: "沉舟侧畔千帆过，病树前头万木春。今日听君歌一曲，暂凭杯酒长精神。",
+        hint: "以“沉舟”“病树”写新旧更替与振作。"
+      },
+      {
+        title: "早春呈水部张十八员外",
+        author: "韩愈 · 唐",
+        line: "天街小雨润如酥，草色遥看近却无。最是一年春好处，绝胜烟柳满皇都。",
+        hint: "早春之“微”，胜过晚春之“浓”。"
+      },
+      {
+        title: "琵琶行（节选）",
+        author: "白居易 · 唐",
+        line: "大弦嘈嘈如急雨，小弦切切如私语。嘈嘈切切错杂弹，大珠小珠落玉盘。",
+        hint: "以拟声与比喻写琵琶音色层次。"
+      },
+      {
+        title: "蜀道难（节选）",
+        author: "李白 · 唐",
+        line: "噫吁嚱，危乎高哉。蜀道之难，难于上青天。",
+        hint: "夸张铺陈，极写蜀道险峻。"
+      },
+      {
+        title: "将进酒（节选）",
+        author: "李白 · 唐",
+        line: "君不见黄河之水天上来，奔流到海不复回。君不见高堂明镜悲白发，朝如青丝暮成雪。",
+        hint: "人生易逝，豪放纵酒。"
+      },
+      {
+        title: "行路难·其一（节选）",
+        author: "李白 · 唐",
+        line: "金樽清酒斗十千，玉盘珍羞直万钱。停杯投箸不能食，拔剑四顾心茫然。",
+        hint: "抑郁与豪情并存的开篇。"
+      },
+      {
+        title: "逢入京使",
+        author: "岑参 · 唐",
+        line: "故园东望路漫漫，双袖龙钟泪不干。马上相逢无纸笔，凭君传语报平安。",
+        hint: "边塞征人，思乡情切。"
+      },
+      {
+        title: "题破山寺后禅院",
+        author: "常建 · 唐",
+        line: "曲径通幽处，禅房花木深。山光悦鸟性，潭影空人心。万籁此俱寂，但余钟磬音。",
+        hint: "清幽空寂的禅境。"
+      },
+      {
+        title: "望月怀远",
+        author: "张九龄 · 唐",
+        line: "海上生明月，天涯共此时。情人怨遥夜，竟夕起相思。灭烛怜光满，披衣觉露滋。",
+        hint: "同看明月，遥寄相思。"
+      },
+      {
+        title: "夜雨寄北",
+        author: "李商隐 · 唐",
+        line: "君问归期未有期，巴山夜雨涨秋池。何当共剪西窗烛，却话巴山夜雨时。",
+        hint: "以“剪烛”寄团聚之愿。"
+      },
+      {
+        title: "锦瑟（节选）",
+        author: "李商隐 · 唐",
+        line: "锦瑟无端五十弦，一弦一柱思华年。庄生晓梦迷蝴蝶，望帝春心托杜鹃。",
+        hint: "典故密集，情思幽微。"
+      },
+      {
+        title: "无题·相见时难别亦难（节选）",
+        author: "李商隐 · 唐",
+        line: "相见时难别亦难，东风无力百花残。春蚕到死丝方尽，蜡炬成灰泪始干。",
+        hint: "“春蚕”“蜡炬”写至死不渝。"
+      },
+      {
+        title: "黄鹤楼（节选）",
+        author: "崔颢 · 唐",
+        line: "昔人已乘黄鹤去，此地空余黄鹤楼。黄鹤一去不复返，白云千载空悠悠。",
+        hint: "吊古伤今，气象苍茫。"
+      },
+      {
+        title: "登岳阳楼（节选）",
+        author: "杜甫 · 唐",
+        line: "昔闻洞庭水，今上岳阳楼。吴楚东南坼，乾坤日夜浮。亲朋无一字，老病有孤舟。",
+        hint: "“吴楚东南坼”写洞庭浩荡。"
+      },
+      {
+        title: "春江花月夜（节选）",
+        author: "张若虚 · 唐",
+        line: "春江潮水连海平，海上明月共潮生。滟滟随波千万里，何处春江无月明。",
+        hint: "以月映江，空灵瑰丽。"
+      },
+      {
+        title: "雁门太守行（节选）",
+        author: "李贺 · 唐",
+        line: "黑云压城城欲摧，甲光向日金鳞开。角声满天秋色里，塞上燕脂凝夜紫。",
+        hint: "色彩浓烈，写边城危急。"
+      },
+      {
+        title: "赤壁",
+        author: "杜牧 · 唐",
+        line: "折戟沉沙铁未销，自将磨洗认前朝。东风不与周郎便，铜雀春深锁二乔。",
+        hint: "借史抒怀，感叹机缘。"
+      },
+      {
+        title: "过零丁洋（节选）",
+        author: "文天祥 · 宋",
+        line: "辛苦遭逢起一经，干戈寥落四周星。人生自古谁无死，留取丹心照汗青。",
+        hint: "浩然正气，丹心照汗青。"
+      },
+      {
+        title: "渔家傲·秋思（节选）",
+        author: "范仲淹 · 宋",
+        line: "塞下秋来风景异，衡阳雁去无留意。四面边声连角起，千嶂里，长烟落日孤城闭。",
+        hint: "边塞词风，苍凉雄浑。"
+      },
+      {
+        title: "游山西村",
+        author: "陆游 · 宋",
+        line: "莫笑农家腊酒浑，丰年留客足鸡豚。山重水复疑无路，柳暗花明又一村。",
+        hint: "“柳暗花明”化为成语。"
+      },
+      {
+        title: "观书有感",
+        author: "朱熹 · 宋",
+        line: "半亩方塘一鉴开，天光云影共徘徊。问渠那得清如许，为有源头活水来。",
+        hint: "以“活水”喻学问之源。"
+      },
+      {
+        title: "登飞来峰",
+        author: "王安石 · 宋",
+        line: "飞来山上千寻塔，闻说鸡鸣见日升。不畏浮云遮望眼，自缘身在最高层。",
+        hint: "立意高远，见识决定眼界。"
+      },
+      {
+        title: "水调歌头·明月几时有（节选）",
+        author: "苏轼 · 宋",
+        line: "明月几时有，把酒问青天。不知天上宫阙，今夕是何年。我欲乘风归去，又恐琼楼玉宇，高处不胜寒。",
+        hint: "中秋名篇，旷达与惆怅并存。"
+      },
+      {
+        title: "念奴娇·赤壁怀古（节选）",
+        author: "苏轼 · 宋",
+        line: "大江东去，浪淘尽，千古风流人物。故垒西边，人道是，三国周郎赤壁。乱石穿空，惊涛拍岸，卷起千堆雪。",
+        hint: "豪放词典范，写景入史。"
+      },
+      {
+        title: "定风波·莫听穿林打叶声（节选）",
+        author: "苏轼 · 宋",
+        line: "莫听穿林打叶声，何妨吟啸且徐行。竹杖芒鞋轻胜马，谁怕。",
+        hint: "逆境从容，“何妨吟啸且徐行”。"
+      },
+      {
+        title: "江城子·密州出猎（节选）",
+        author: "苏轼 · 宋",
+        line: "老夫聊发少年狂，左牵黄，右擎苍。锦帽貂裘，千骑卷平冈。为报倾城随太守，亲射虎，看孙郎。",
+        hint: "豪迈出猎，气象雄健。"
+      },
+      {
+        title: "破阵子·为陈同甫赋壮词以寄之（节选）",
+        author: "辛弃疾 · 宋",
+        line: "醉里挑灯看剑，梦回吹角连营。八百里分麾下炙，五十弦翻塞外声。沙场秋点兵。",
+        hint: "壮志难酬的豪情与悲怆。"
+      },
+      {
+        title: "永遇乐·京口北固亭怀古（节选）",
+        author: "辛弃疾 · 宋",
+        line: "千古江山，英雄无觅，孙仲谋处。舞榭歌台，风流总被雨打风吹去。斜阳草树，寻常巷陌，人道寄奴曾住。",
+        hint: "怀古抚今，雄浑沉郁。"
+      },
+      {
+        title: "青玉案·元夕（节选）",
+        author: "辛弃疾 · 宋",
+        line: "东风夜放花千树，更吹落，星如雨。宝马雕车香满路。凤箫声动，玉壶光转，一夜鱼龙舞。",
+        hint: "灯火繁华与“那人”对照。"
+      },
+      {
+        title: "声声慢·寻寻觅觅（节选）",
+        author: "李清照 · 宋",
+        line: "寻寻觅觅，冷冷清清，凄凄惨惨戚戚。乍暖还寒时候，最难将息。",
+        hint: "叠字写愁，情绪层层递进。"
+      },
+      {
+        title: "如梦令·昨夜雨疏风骤",
+        author: "李清照 · 宋",
+        line: "昨夜雨疏风骤，浓睡不消残酒。试问卷帘人，却道海棠依旧。知否，知否，应是绿肥红瘦。",
+        hint: "“绿肥红瘦”传神写春残。"
+      },
+      {
+        title: "满江红·怒发冲冠（节选）",
+        author: "岳飞 · 宋",
+        line: "怒发冲冠，凭栏处，潇潇雨歇。抬望眼，仰天长啸，壮怀激烈。三十功名尘与土，八千里路云和月。",
+        hint: "精忠报国，慷慨激昂。"
+      },
+      {
+        title: "天净沙·秋思",
+        author: "马致远 · 元",
+        line: "枯藤老树昏鸦，小桥流水人家。古道西风瘦马，夕阳西下，断肠人在天涯。",
+        hint: "意象叠加，极写羁旅之愁。"
+      },
+      {
+        title: "己亥杂诗（其五）",
+        author: "龚自珍 · 清",
+        line: "浩荡离愁白日斜，吟鞭东指即天涯。落红不是无情物，化作春泥更护花。",
+        hint: "以“落红”喻自我奉献。"
+      },
+      {
+        title: "石灰吟",
+        author: "于谦 · 明",
+        line: "千锤万凿出深山，烈火焚烧若等闲。粉骨碎身浑不怕，要留清白在人间。",
+        hint: "托物言志，守节不屈。"
+      },
+      {
+        title: "秋词（其一）",
+        author: "刘禹锡 · 唐",
+        line: "自古逢秋悲寂寥，我言秋日胜春朝。晴空一鹤排云上，便引诗情到碧霄。",
+        hint: "反传统悲秋，昂扬开阔。"
+      },
+
+      {
+        title: "岳阳楼记（节选）",
+        author: "范仲淹 · 宋",
+        line: "不以物喜，不以己悲。居庙堂之高则忧其民，处江湖之远则忧其君。",
+        hint: "先天下之忧而忧的精神内核。"
+      },
+      {
+        title: "醉翁亭记（节选）",
+        author: "欧阳修 · 宋",
+        line: "醉翁之意不在酒，在乎山水之间也。山水之乐，得之心而寓之酒也。",
+        hint: "以酒写乐，写乐而不囿于酒。"
+      },
+      {
+        title: "桃花源记（节选）",
+        author: "陶渊明 · 晋",
+        line: "土地平旷，屋舍俨然。有良田美池桑竹之属，阡陌交通，鸡犬相闻。",
+        hint: "理想社会图景，恬淡宁静。"
+      },
+      {
+        title: "出师表（节选）",
+        author: "诸葛亮 · 三国",
+        line: "亲贤臣，远小人，此先汉所以兴隆也。亲小人，远贤臣，此后汉所以倾颓也。",
+        hint: "治国用人之道，论断鲜明。"
+      },
+      {
+        title: "兰亭集序（节选）",
+        author: "王羲之 · 晋",
+        line: "后之视今，亦犹今之视昔。悲夫。",
+        hint: "人生无常，感慨由乐转悲。"
+      },
+      {
+        title: "滕王阁序（节选）",
+        author: "王勃 · 唐",
+        line: "豫章故郡，洪都新府。星分翼轸，地接衡庐。",
+        hint: "骈文名篇，开头即见气势与对仗。"
+      },
+      {
+        title: "滕王阁序（名句）",
+        author: "王勃 · 唐",
+        line: "落霞与孤鹜齐飞，秋水共长天一色。",
+        hint: "千古名句，画面壮阔而清澈。"
+      },
+      {
+        title: "阿房宫赋（节选）",
+        author: "杜牧 · 唐",
+        line: "六王毕，四海一。蜀山兀，阿房出。覆压三百余里，隔离天日。",
+        hint: "写秦宫之奢，铺陈排比，气势逼人。"
+      },
+      {
+        title: "赤壁赋（节选）",
+        author: "苏轼 · 宋",
+        line: "寄蜉蝣于天地，渺沧海之一粟。哀吾生之须臾，羡长江之无穷。",
+        hint: "以渺小对浩大，写人生哲思。"
+      },
+      {
+        title: "师说（节选）",
+        author: "韩愈 · 唐",
+        line: "师者，所以传道受业解惑也。人非生而知之者，孰能无惑。",
+        hint: "论“师”之本义，驳世俗偏见。"
+      },
+      {
+        title: "劝学（节选）",
+        author: "荀子",
+        line: "锲而舍之，朽木不折。锲而不舍，金石可镂。",
+        hint: "强调坚持之力，成为常用格言。"
+      },
+      {
+        title: "陈情表（节选）",
+        author: "李密 · 晋",
+        line: "臣密言，臣以险衅，夙遭闵凶。生孩六月，慈父见背。行年四岁，舅夺母志。",
+        hint: "陈述身世，情辞恳切。"
+      },
+      {
+        title: "送东阳马生序（节选）",
+        author: "宋濂 · 明",
+        line: "余幼时即嗜学，家贫，无从致书以观。每假借于藏书之家，手自笔录。",
+        hint: "以亲身经历勉励后学。"
+      },
+      {
+        title: "逍遥游（节选）",
+        author: "庄子",
+        line: "鹏之徙于南冥也，水击三千里。抟扶摇而上者九万里，去以六月息者也。",
+        hint: "以鹏鸟喻超越，想象奇伟。"
+      },
+      {
+        title: "离骚（名句一）",
+        author: "屈原",
+        line: "长太息以掩涕兮，哀民生之多艰。",
+        hint: "忧国忧民的深沉叹息。"
+      },
+      {
+        title: "离骚（名句二）",
+        author: "屈原",
+        line: "路漫漫其修远兮，吾将上下而求索。",
+        hint: "探索不止，成为精神象征。"
+      },
+      {
+        title: "春夜喜雨（节选）",
+        author: "杜甫 · 唐",
+        line: "好雨知时节，当春乃发生。随风潜入夜，润物细无声。",
+        hint: "以“润物细无声”写春雨之善。"
+      },
+      {
+        title: "钱塘湖春行（节选）",
+        author: "白居易 · 唐",
+        line: "孤山寺北贾亭西，水面初平云脚低。几处早莺争暖树，谁家新燕啄春泥。",
+        hint: "西湖早春，莺燕争春。"
+      },
+      {
+        title: "滁州西涧",
+        author: "韦应物 · 唐",
+        line: "独怜幽草涧边生，上有黄鹂深树鸣。春潮带雨晚来急，野渡无人舟自横。",
+        hint: "清幽闲适，结句意境空阔。"
+      },
+      {
+        title: "蜀相（节选）",
+        author: "杜甫 · 唐",
+        line: "三顾频烦天下计，两朝开济老臣心。出师未捷身先死，长使英雄泪满襟。",
+        hint: "诸葛亮千古悲歌。"
+      },
+      {
+        title: "梦游天姥吟留别（节选）",
+        author: "李白 · 唐",
+        line: "天姥连天向天横，势拔五岳掩赤城。云青青兮欲雨，水澹澹兮生烟。",
+        hint: "浪漫瑰丽，想象奔放。"
+      },
+      {
+        title: "登金陵凤凰台（节选）",
+        author: "李白 · 唐",
+        line: "三山半落青天外，二水中分白鹭洲。总为浮云能蔽日，长安不见使人愁。",
+        hint: "借景抒怀，伤时忧世。"
+      },
+      {
+        title: "归去来兮辞（节选）",
+        author: "陶渊明 · 晋",
+        line: "归去来兮，田园将芜胡不归。既自以心为形役，奚惆怅而独悲。",
+        hint: "辞官归隐的宣言。"
+      },
+      {
+        title: "小石潭记（节选）",
+        author: "柳宗元 · 唐",
+        line: "青树翠蔓，蒙络摇缀，参差披拂。",
+        hint: "极写幽深清冷之景。"
+      },
+      {
+        title: "记承天寺夜游（节选）",
+        author: "苏轼 · 宋",
+        line: "庭下如积水空明，水中藻荇交横，盖竹柏影也。",
+        hint: "月色如水，清澈空灵。"
+      },
+      {
+        title: "马说（节选）",
+        author: "韩愈 · 唐",
+        line: "世有伯乐，然后有千里马。千里马常有，而伯乐不常有。",
+        hint: "借马喻才，批评埋没人才。"
+      },
+      {
+        title: "鱼我所欲也（节选）",
+        author: "孟子",
+        line: "鱼，我所欲也。熊掌，亦我所欲也。二者不可得兼，舍鱼而取熊掌者也。",
+        hint: "以取舍论义利。"
+      },
+      {
+        title: "生于忧患，死于安乐（节选）",
+        author: "《孟子》",
+        line: "故天将降大任于是人也，必先苦其心志，劳其筋骨。",
+        hint: "以磨难成就担当。"
+      },
+      {
+        title: "曹刿论战（节选）",
+        author: "《左传》",
+        line: "夫战，勇气也。一鼓作气，再而衰，三而竭。",
+        hint: "论战争节奏与士气。"
+      },
+      {
+        title: "邹忌讽齐王纳谏（节选）",
+        author: "《战国策》",
+        line: "臣诚知不如徐公美。",
+        hint: "以自省引出纳谏之道。"
+      },
+      {
+        title: "虞美人·春花秋月何时了（节选）",
+        author: "李煜 · 南唐",
+        line: "春花秋月何时了，往事知多少。小楼昨夜又东风，故国不堪回首月明中。",
+        hint: "亡国之痛，词中至哀。"
+      },
+      {
+        title: "相见欢·无言独上西楼",
+        author: "李煜 · 南唐",
+        line: "无言独上西楼，月如钩。寂寞梧桐深院锁清秋。剪不断，理还乱，是离愁。",
+        hint: "离愁如乱丝，剪不断理还乱。"
+      },
+      {
+        title: "雨霖铃·寒蝉凄切（节选）",
+        author: "柳永 · 宋",
+        line: "寒蝉凄切，对长亭晚，骤雨初歇。都门帐饮无绪，留恋处，兰舟催发。",
+        hint: "送别慢词，凄切婉转。"
+      },
+      {
+        title: "鹊桥仙·纤云弄巧（节选）",
+        author: "秦观 · 宋",
+        line: "纤云弄巧，飞星传恨，银汉迢迢暗度。金风玉露一相逢，便胜却人间无数。",
+        hint: "七夕名篇，写相逢之珍贵。"
+      },
+      {
+        title: "浣溪沙·一曲新词酒一杯",
+        author: "晏殊 · 宋",
+        line: "一曲新词酒一杯，去年天气旧亭台。夕阳西下几时回。无可奈何花落去，似曾相识燕归来。",
+        hint: "伤春感时，词意含蓄悠长。"
+      },
+      {
+        title: "一剪梅·红藕香残玉簟秋（节选）",
+        author: "李清照 · 宋",
+        line: "红藕香残玉簟秋，轻解罗裳，独上兰舟。云中谁寄锦书来，雁字回时，月满西楼。",
+        hint: "相思入骨，语淡情浓。"
+      },
+      {
+        title: "山坡羊·潼关怀古",
+        author: "张养浩 · 元",
+        line: "峰峦如聚，波涛如怒。山河表里潼关路。望西都，意踌躇。兴，百姓苦。亡，百姓苦。",
+        hint: "怀古见民生之苦，警策沉痛。"
+      },
+      {
+        title: "咏柳",
+        author: "贺知章 · 唐",
+        line: "碧玉妆成一树高，万条垂下绿丝绦。不知细叶谁裁出，二月春风似剪刀。",
+        hint: "以“剪刀”喻春风，咏柳名篇。"
+      },
+      {
+        title: "回乡偶书",
+        author: "贺知章 · 唐",
+        line: "少小离家老大回，乡音无改鬓毛衰。儿童相见不相识，笑问客从何处来。",
+        hint: "久客还乡之感，充满生活情趣。"
+      },
+      {
+        title: "咏鹅",
+        author: "骆宾王 · 唐",
+        line: "鹅，鹅，鹅，曲项向天歌。白毛浮绿水，红掌拨清波。",
+        hint: "极写大白鹅的神态与色彩。"
+      },
+      {
+        title: "春晓",
+        author: "孟浩然 · 唐",
+        line: "春眠不觉晓，处处闻啼鸟。夜来风雨声，花落知多少。",
+        hint: "惜春之情，含蓄悠远。"
+      },
+      {
+        title: "登鹳雀楼",
+        author: "王之涣 · 唐",
+        line: "白日依山尽，黄河入海流。欲穷千里目，更上一层楼。",
+        hint: "高瞻远瞩，充满进取精神。"
+      },
+      {
+        title: "静夜思",
+        author: "李白 · 唐",
+        line: "床前明月光，疑是地上霜。举头望明月，低头思故乡。",
+        hint: "思乡之情的千古绝唱。"
+      },
+      {
+        title: "望庐山瀑布",
+        author: "李白 · 唐",
+        line: "日照香炉生紫烟，遥看瀑布挂前川。飞流直下三千尺，疑是银河落九天。",
+        hint: "极度夸张，写尽庐山瀑布气势。"
+      },
+      {
+        title: "赠汪伦",
+        author: "李白 · 唐",
+        line: "李白乘舟将欲行，忽闻岸上踏歌声。桃花潭水深千尺，不及汪伦送我情。",
+        hint: "以深潭比友情，质朴真挚。"
+      },
+      {
+        title: "黄鹤楼送孟浩然之广陵",
+        author: "李白 · 唐",
+        line: "故人西辞黄鹤楼，烟花三月下扬州。孤帆远影碧空尽，唯见长江天际流。",
+        hint: "以远帆流水寄予送别之情。"
+      },
+      {
+        title: "早发白帝城",
+        author: "李白 · 唐",
+        line: "朝辞白帝彩云间，千里江陵一日还。两岸猿声啼不住，轻舟已过万重山。",
+        hint: "行程迅疾，心境欢快。"
+      },
+      {
+        title: "望天门山",
+        author: "李白 · 唐",
+        line: "天门中断楚江开，碧水东流至此回。两岸青山相对出，孤帆一片日边来。",
+        hint: "气势磅礴，景中含情。"
+      },
+      {
+        title: "独坐敬亭山",
+        author: "李白 · 唐",
+        line: "众鸟高飞尽，孤云独去闲。相看两不厌，只有敬亭山。",
+        hint: "孤独中的静谧与相契。"
+      },
+      {
+        title: "江畔独步寻花",
+        author: "杜甫 · 唐",
+        line: "黄四娘家花满蹊，千朵万朵压枝低。留连戏蝶时时舞，自在娇莺恰恰啼。",
+        hint: "春意盎然，生趣勃勃。"
+      },
+      {
+        title: "绝句",
+        author: "杜甫 · 唐",
+        line: "两个黄鹂鸣翠柳，一行白鹭上青天。窗含西岭千秋雪，门泊东吴万里船。",
+        hint: "色彩鲜明，景物层次丰富。"
+      },
+      {
+        title: "江南逢李龟年",
+        author: "杜甫 · 唐",
+        line: "岐王宅里寻常见，崔九堂前几度闻。正是江南好风景，落花时节又逢君。",
+        hint: "盛衰之感，人生况味。"
+      },
+      {
+        title: "清明",
+        author: "杜牧 · 唐",
+        line: "清明时节雨纷纷，路上行人欲断魂。借问酒家何处有？牧童遥指杏花村。",
+        hint: "清明时节的愁思与转机。"
+      },
+      {
+        title: "秋夕",
+        author: "杜牧 · 唐",
+        line: "银烛秋光冷画屏，轻罗小扇扑流萤。天阶夜色凉如水，坐看牵牛织女星。",
+        hint: "失意宫女的孤独与哀怨。"
+      },
+      {
+        title: "山行",
+        author: "杜牧 · 唐",
+        line: "远上寒山石径斜，白云生处有人家。停车坐爱枫林晚，霜叶红于二月花。",
+        hint: "歌颂秋色，充满生机。"
+      },
+      {
+        title: "泊秦淮",
+        author: "杜牧 · 唐",
+        line: "烟笼寒水月笼沙，夜泊秦淮近酒家。商女不知亡国恨，隔江犹唱后庭花。",
+        hint: "忧国忧民之情，讽刺现实。"
+      },
+      {
+        title: "江南春",
+        author: "杜牧 · 唐",
+        line: "千里莺啼绿映红，水村山郭酒旗风。南朝四百八十寺，多少楼台烟雨中。",
+        hint: "江南美景与怀古思索。"
+      },
+      {
+        title: "悯农其一",
+        author: "李绅 · 唐",
+        line: "锄禾日当午，汗滴禾下土。谁知盘中餐，粒粒皆辛苦。",
+        hint: "感叹劳动艰辛，提倡节约。"
+      },
+      {
+        title: "悯农其二",
+        author: "李绅 · 唐",
+        line: "春种一粒粟，秋收万颗子。四海无闲田，农夫犹饿死。",
+        hint: "揭露社会矛盾，同情劳动者。"
+      },
+      {
+        title: "枫桥夜泊",
+        author: "张继 · 唐",
+        line: "月落乌啼霜满天，江枫渔火对愁眠。姑苏城外寒山寺，夜半钟声到客船。",
+        hint: "凄清幽冷的秋江夜色。"
+      },
+      {
+        title: "游子吟",
+        author: "孟郊 · 唐",
+        line: "慈母手中线，游子身上衣。临行密密缝，意恐迟迟归。谁言寸草心，报得三春晖。",
+        hint: "母爱的伟大与深情。"
+      },
+      {
+        title: "江雪",
+        author: "柳宗元 · 唐",
+        line: "千山鸟飞绝，万径人踪灭。孤舟蓑笠翁，独钓寒江雪。",
+        hint: "孤独、清高与孤傲的化身。"
+      },
+      {
+        title: "登乐游原",
+        author: "李商隐 · 唐",
+        line: "向晚意不适，驱车登古原。夕阳无限好，只是近黄昏。",
+        hint: "对美好事物的依恋与无奈。"
+      },
+      {
+        title: "无题",
+        author: "李商隐 · 唐",
+        line: "身无彩凤双飞翼，心有灵犀一点通。",
+        hint: "写相思、心灵感应之名句。"
+      },
+      {
+        title: "锦瑟（名句）",
+        author: "李商隐 · 唐",
+        line: "沧海月明珠有泪，蓝田日暖玉生烟。",
+        hint: "瑰丽幽微，诗意朦胧。"
+      },
+      {
+        title: "出塞",
+        author: "王昌龄 · 唐",
+        line: "秦时明月汉时关，万里长征人未还。但使龙城飞将在，不教胡马度阴山。",
+        hint: "边塞诗的名篇，气概雄浑。"
+      },
+      {
+        title: "从军行其四",
+        author: "王昌龄 · 唐",
+        line: "青海长云暗雪山，孤城遥望玉门关。黄沙百战穿金甲，不破楼兰终不还。",
+        hint: "坚定的报国决心。"
+      },
+      {
+        title: "凉州词",
+        author: "王翰 · 唐",
+        line: "葡萄美酒夜光杯，欲饮琵琶马上催。醉卧沙场君莫笑，古来征战几人回。",
+        hint: "旷达豪放，视死如归。"
+      },
+      {
+        title: "九月九日忆山东兄弟",
+        author: "王维 · 唐",
+        line: "独在异乡为异客，每逢佳节倍思亲。遥知兄弟登高处，遍插茱萸少一人。",
+        hint: "佳节思亲的动人篇章。"
+      },
+      {
+        title: "别董大",
+        author: "高适 · 唐",
+        line: "千里黄云白日曛，北风吹雁雪纷纷。莫愁前路无知己，天下谁人不识君。",
+        hint: "豪爽慷慨，慰藉友人之作。"
+      },
+      {
+        title: "乌衣巷",
+        author: "刘禹锡 · 唐",
+        line: "朱雀桥边野草花，乌衣巷口夕阳斜。旧时王谢堂前燕，飞入寻常百姓家。",
+        hint: "感叹人事变迁，兴亡之思。"
+      },
+      {
+        title: "浪淘沙其九",
+        author: "刘禹锡 · 唐",
+        line: "九曲黄河万里沙，浪淘风簸自天涯。如今直上银河去，同到牵牛织女家。",
+        hint: "气势磅礴，富于想象。"
+      },
+      {
+        title: "赋得古原草送别",
+        author: "白居易 · 唐",
+        line: "离离原上草，一岁一枯荣。野火烧不尽，春风吹又生。远芳侵古道，晴翠接荒城。",
+        hint: "歌颂生命力之顽强。"
+      },
+      {
+        title: "池上",
+        author: "白居易 · 唐",
+        line: "小娃撑小艇，偷采白莲回。不解藏踪迹，浮萍一道开。",
+        hint: "活泼、天真的童趣描写。"
+      },
+      {
+        title: "元日",
+        author: "王安石 · 宋",
+        line: "爆竹声中一岁除，春风送暖入屠苏。千门万户曈曈日，总把新桃换旧符。",
+        hint: "春节之欢愉与新陈代谢。"
+      },
+      {
+        title: "小池",
+        author: "杨万里 · 宋",
+        line: "泉眼无声惜细流，树阴照水爱晴柔。小荷才露尖尖角，早有蜻蜓立上头。",
+        hint: "细腻、轻灵的初夏景色。"
+      },
+      {
+        title: "晓出净慈寺送林子方",
+        author: "杨万里 · 宋",
+        line: "毕竟西湖六月中，风光不与四时同。接天莲叶无穷碧，映日荷花别样红。",
+        hint: "西湖盛夏，荷叶荷花之盛。"
+      },
+      {
+        title: "饮湖上初晴后雨",
+        author: "苏轼 · 宋",
+        line: "水光潋滟晴方好，山色空蒙雨亦奇。欲把西湖比西子，淡妆浓抹总相宜。",
+        hint: "西湖之美，千古定评。"
+      },
+      {
+        title: "题西林壁",
+        author: "苏轼 · 宋",
+        line: "横看成岭侧成峰，远近高低各不同。不识庐山真面目，只缘身在此山中。",
+        hint: "哲理名篇，立足之点不同则见不同。"
+      },
+      {
+        title: "惠崇春江晚景",
+        author: "苏轼 · 宋",
+        line: "竹外桃花三两枝，春江水暖鸭先知。蒌蒿满地芦芽短，正是河豚欲上时。",
+        hint: "春江初暖，富有生活气息。"
+      },
+      {
+        title: "江城子·记梦",
+        author: "苏轼 · 宋",
+        line: "十年生死两茫茫，不思量，自难忘。千里孤坟，无处话凄凉。",
+        hint: "悼亡名篇，哀婉凄怆。"
+      },
+      {
+        title: "卜算子·咏梅",
+        author: "陆游 · 宋",
+        line: "驿外断桥边，寂寞开无主。已是黄昏独自愁，更著风和雨。无意苦争春，一任群芳妒。",
+        hint: "以梅自喻，孤高自守。"
+      },
+      {
+        title: "秋夜将晓出篱门迎凉有感",
+        author: "陆游 · 宋",
+        line: "三万里河东入海，五千仞岳上摩天。遗民泪尽胡尘里，南望王师又一年。",
+        hint: "收复中原之志，忧国忧民。"
+      },
+      {
+        title: "示儿",
+        author: "陆游 · 宋",
+        line: "死去元知万事空，但悲不见九州同。王师北定中原日，家祭无忘告乃翁。",
+        hint: "绝笔诗，深沉的爱国情。"
+      },
+      {
+        title: "蝶恋花·贮倚危楼",
+        author: "柳永 · 宋",
+        line: "衣带渐宽终不悔，为伊消得人憔悴。",
+        hint: "写执着追求的千古名句。"
+      },
+      {
+        title: "如梦令·常记溪亭日暮",
+        author: "李清照 · 宋",
+        line: "常记溪亭日暮，沉醉不知归路。兴尽晚回舟，误入藕花深处。争渡，争渡，惊起一滩鸥鹭。",
+        hint: "早期活泼欢快的生活片段。"
+      },
+      {
+        title: "夏日绝句",
+        author: "李清照 · 宋",
+        line: "生当作人杰，死亦为鬼雄。至今思项羽，不肯过江东。",
+        hint: "巾帼不让须眉，充满气节。"
+      },
+      {
+        title: "卜算子·我住长江头",
+        author: "李之仪 · 宋",
+        line: "我住长江头，君住长江尾。日日思君不见君，共饮长江水。此水几时休，此恨何时已。",
+        hint: "民歌色彩，质朴情深。"
+      },
+      {
+        title: "望海潮·东南形胜",
+        author: "柳永 · 宋",
+        line: "东南形胜，三吴都会，钱塘自古繁华。烟柳画桥，风帘翠幕，参差十万人家。",
+        hint: "极写杭州之繁华富庶。"
+      },
+      {
+        title: "浪淘沙令·帘外雨潺潺",
+        author: "李煜 · 南唐",
+        line: "帘外雨潺潺，春意阑珊。罗衾不耐五更寒。梦里不知身是客，一晌贪欢。",
+        hint: "去国怀乡，亡国之音哀以思。"
+      },
+      {
+        title: "破阵子·春景",
+        author: "晏殊 · 宋",
+        line: "燕子来时新社，梨花落后清明。池上碧苔三四点，叶底黄鹂一两声。",
+        hint: "清新淡雅的春景图。"
+      },
+      {
+        title: "生查子·元夕",
+        author: "欧阳修 · 宋",
+        line: "月上柳梢头，人约黄昏后。今年元夜时，月与灯依旧。不见去年人，泪湿春衫袖。",
+        hint: "物是人非，感伤无限。"
+      },
+      {
+        title: "卜算子·咏梅（和）",
+        author: "毛泽东",
+        line: "风雨送春归，飞雪迎春到。已是悬崖百丈冰，犹有花枝俏。",
+        hint: "革命浪漫主义，昂扬向上。"
+      },
+      {
+        title: "沁园春·雪（节选）",
+        author: "毛泽东",
+        line: "江山如此多娇，引无数英雄竞折腰。惜秦皇汉武，略输文采；唐宗宋祖，稍逊风骚。",
+        hint: "气势恢宏，评古论今。"
+      },
+      {
+        title: "七律·长征（节选）",
+        author: "毛泽东",
+        line: "红军不怕远征难，万水千山只等闲。五岭逶迤腾细浪，乌蒙磅礴走泥丸。",
+        hint: "大无畏精神，革命乐观主义。"
+      },
+      {
+        title: "村居",
+        author: "高鼎 · 清",
+        line: "草长莺飞二月天，拂堤杨柳醉春烟。儿童散学归来早，忙趁东风放纸鸢。",
+        hint: "清新欢快的乡间春景。"
+      },
+      {
+        title: "宿新市徐公店",
+        author: "杨万里 · 宋",
+        line: "篱落疏疏一径深，树头花落未成阴。儿童急走追黄蝶，飞入菜花无处寻。",
+        hint: "童趣盎然，色彩明快。"
+      }
+    ];
+
+    // --- Segment Pool (for distractor generation) ---
+    const SEG_SPLIT_RE = /[，。！？；：]/;
+    function splitSegments(line){
+      return String(line)
+        .split(SEG_SPLIT_RE)
+        .map(s => s.trim())
+        .filter(Boolean);
+    }
+
+    const SEGMENT_POOL = BANK.flatMap((p, poemIndex) => {
+      const segments = splitSegments(p.line);
+      return segments.map((text, i) => {
+        // 获取完整诗句上下文
+        let context = text;
+        if (i % 2 === 0 && i + 1 < segments.length) {
+          context = text + "，" + segments[i + 1] + "。";
+        } else if (i % 2 === 1 && i - 1 >= 0) {
+          context = segments[i - 1] + "，" + text + "。";
+        }
+        return {
+          poemIndex,
+          title: p.title,
+          author: p.author,
+          text,
+          context,
+          hint: p.hint
+        };
+      });
+    });
+
+    const SEGMENTS_BY_TITLE = new Map();
+    SEGMENT_POOL.forEach(seg => {
+      if(!SEGMENTS_BY_TITLE.has(seg.title)) SEGMENTS_BY_TITLE.set(seg.title, []);
+      SEGMENTS_BY_TITLE.get(seg.title).push(seg);
+    });
+
+    function pickOne(arr){
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      poemTitle: $("poemTitle"),
+      poemAuthor: $("poemAuthor"),
+      questionText: $("questionText"),
+      stemContent: $("stemContent"),
+      options: $("options"),
+      round: $("round"),
+      total: $("total"),
+      total2: $("total2"),
+      done: $("done"),
+      nextBtn: $("nextBtn"),
+      skipBtn: $("skipBtn"),
+      revealBtn: $("revealBtn"),
+      score: $("score"),
+      streak: $("streak"),
+      acc: $("acc"),
+      best: $("best"),
+      timeLeft: $("timeLeft"),
+      timeBar: $("timeBar"),
+      roundBar: $("roundBar"),
+      hintBox: $("hintBox"),
+      toast: $("toast"),
+      startOverlay: $("startOverlay"),
+      startBtn: $("startBtn"),
+      resetBtn: $("resetBtn"),
+      timerToggle: $("timerToggle"),
+      soundToggle: $("soundToggle"),
+      secLabel: $("secLabel"),
+      revealPanel: $("revealPanel"),
+      fullLine: $("fullLine"),
+      explain: $("explain"),
+      sourcesPanel: $("sourcesPanel"),
+      sourcesTitle: $("sourcesTitle"),
+      sourceList: $("sourceList"),
+    };
+
+    const STORE_KEY = "poetry_contest_v2";
+
+    const state = {
+      idx: 0,
+      order: [],
+      currentQ: null,
+      answered: false,
+      score: 0,
+      streak: 0,
+      correct: 0,
+      total: 10,
+      enableTimer: true,
+      enableSound: true,
+      seconds: 15,
+      tRemain: 15,
+      tHandle: null,
+      best: 0,
+      seenPool: [], // 记录已出的题目索引
+      recentPool: [], // 最近出过的题目（用于冷却，避免刚做完就重复）
+    };
+
+    function loadPersist(){
+      try{
+        const raw = localStorage.getItem(STORE_KEY);
+        if(!raw) return;
+        const d = JSON.parse(raw);
+        if(typeof d.best === 'number') state.best = d.best;
+        if(typeof d.enableTimer === 'boolean') state.enableTimer = d.enableTimer;
+        if(typeof d.enableSound === 'boolean') state.enableSound = d.enableSound;
+      } catch(_){/* ignore */}
+    }
+
+    function persist(){
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        best: state.best,
+        enableTimer: state.enableTimer,
+        enableSound: state.enableSound
+      }));
+    }
+
+    function resetPersist(){
+      localStorage.removeItem(STORE_KEY);
+      state.best = 0;
+      state.enableTimer = true;
+      state.enableSound = true;
+      state.seenPool = [];
+      state.recentPool = [];
+      persist();
+      toast("已清空记录");
+      syncSide();
+    }
+
+    function shuffle(arr){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+      }
+      return a;
+    }
+
+    // --- Dynamic Question Generation ---
+    function generateQuestion(poemIndex) {
+      const poem = BANK[poemIndex];
+      const segments = splitSegments(poem.line);
+      
+      if (segments.length < 2) return null;
+
+      const qIdx = Math.floor(Math.random() * (segments.length - 1));
+      const stem = segments[qIdx];
+      const answerText = segments[qIdx + 1];
+      
+      // Construct correct option object
+      const answerObj = SEGMENT_POOL.find(s => s.poemIndex === poemIndex && s.text === answerText);
+
+      // Distractor logic
+      const distractors = [];
+      const targetLen = answerText.length;
+      const targetTitle = poem.title;
+
+      // 1. Different poems
+      const validOtherPoemTitles = Array.from(SEGMENTS_BY_TITLE.keys()).filter(t => t !== targetTitle);
+      const shuffledPoemTitles = shuffle(validOtherPoemTitles);
+
+      for (const otherTitle of shuffledPoemTitles) {
+        if (distractors.length >= 3) break;
+        const candidateSegments = SEGMENTS_BY_TITLE.get(otherTitle)
+          .filter(seg => seg.text.length === targetLen);
+        
+        if (candidateSegments.length > 0) {
+          const picked = pickOne(candidateSegments);
+          if (!distractors.some(d => d.text === picked.text)) {
+            distractors.push(picked);
+          }
+        }
+      }
+
+      // 2. Fallback
+      if (distractors.length < 3) {
+        const pool = SEGMENT_POOL.filter(s => 
+          s.title !== targetTitle && 
+          s.text.length === targetLen && 
+          !distractors.some(d => d.text === s.text)
+        );
+        const shuffledPool = shuffle(pool);
+        while (distractors.length < 3 && shuffledPool.length > 0) {
+          distractors.push(shuffledPool.pop());
+        }
+      }
+
+      // 3. Last Resort Fallback
+      if (distractors.length < 3) {
+        const anyPool = SEGMENT_POOL.filter(s => s.text !== answerText && !distractors.some(d => d.text === s.text));
+        const shuffledAny = shuffle(anyPool);
+        while (distractors.length < 3 && shuffledAny.length > 0) {
+          distractors.push(shuffledAny.pop());
+        }
+      }
+
+      const options = shuffle([answerObj, ...distractors.slice(0, 3)]);
+
+      return {
+        title: poem.title,
+        author: poem.author,
+        stem: stem,
+        answer: answerText,
+        options: options,
+        hint: poem.hint,
+        fullLine: poem.line
+      };
+    }
+
+    function concealInfo(){
+      els.poemTitle.textContent = "—";
+      els.poemAuthor.textContent = "—";
+      els.hintBox.textContent = "作答后显示作者、标题与解析。";
+      els.revealPanel.hidden = true;
+      els.fullLine.textContent = "—";
+      els.explain.textContent = "—";
+      els.sourceList.innerHTML = "";
+    }
+
+    function revealInfo(q){
+      els.poemTitle.textContent = q.title;
+      els.poemAuthor.textContent = q.author;
+      els.hintBox.textContent = q.hint;
+      els.revealPanel.hidden = false;
+      els.fullLine.textContent = q.fullLine;
+      els.explain.textContent = `解析：${q.hint}`;
+
+      // Render sources for all options
+      els.sourcesTitle.textContent = "选项溯源 · 拓展学习";
+      els.sourceList.innerHTML = "";
+      q.options.forEach(opt => {
+        const item = document.createElement("div");
+        const isCorrect = opt.text === q.answer;
+        item.className = `source-item ${isCorrect ? 'is-correct' : ''}`;
+        
+        // 如果是正确答案，加个小徽章
+        const badge = isCorrect ? '<span style="color:var(--gold); font-size:10px; margin-left:4px; border:1px solid var(--gold); padding:0 4px; border-radius:4px;">正确项</span>' : '';
+        
+        item.innerHTML = `
+          <span class="opt-text">“${escapeHtml(opt.context)}”${badge}</span>
+          <div class="opt-meta">${escapeHtml(opt.author)} · 《${escapeHtml(opt.title)}》</div>
+          <span class="opt-hint">${escapeHtml(opt.hint)}</span>
+        `;
+        els.sourceList.appendChild(item);
+      });
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
+    }
+
+    function toast(msg){
+      els.toast.textContent = msg;
+      els.toast.classList.add("show");
+      clearTimeout(els.toast._t);
+      els.toast._t = setTimeout(()=> els.toast.classList.remove("show"), 1600);
+    }
+
+    function beep(kind="ok"){
+      if(!state.enableSound) return;
+      try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = kind === 'ok' ? 'triangle' : 'sawtooth';
+        o.frequency.value = kind === 'ok' ? 660 : 196;
+        g.gain.value = 0.05;
+        o.connect(g); g.connect(ctx.destination);
+        o.start();
+        setTimeout(()=>{ o.stop(); ctx.close(); }, kind === 'ok' ? 120 : 180);
+      } catch(_){/* ignore */}
+    }
+
+    function startRound(isContinue = false){
+      if(!isContinue) {
+        state.score = 0;
+        state.streak = 0;
+        state.correct = 0;
+        state.seenPool = [];
+        state.recentPool = [];
+      }
+      state.idx = 0;
+      state.answered = false;
+      
+      // 去重逻辑：优先从没见过的池子里选，且避开最近出的 20 道（若题库足够）
+      let available = [];
+      for(let i=0; i<BANK.length; i++) {
+        if(!state.seenPool.includes(i) && !state.recentPool.includes(i)) {
+          available.push(i);
+        }
+      }
+      
+      // 如果满足冷却条件的题目不足 10 道，则放宽冷却限制
+      if(available.length < 10) {
+        available = [];
+        for(let i=0; i<BANK.length; i++) {
+          if(!state.seenPool.includes(i)) available.push(i);
+        }
+      }
+
+      let selected = [];
+      if(available.length >= 10) {
+        selected = shuffle(available).slice(0, 10);
+      } else {
+        // 不足 10 道：先拿完 available，再从全集补齐；尽量避开最近出过的题目
+        selected = shuffle(available);
+        const need = 10 - selected.length;
+        let candidates = [...Array(BANK.length).keys()].filter(i => !selected.includes(i) && !state.recentPool.includes(i));
+        if(candidates.length < need) {
+          candidates = [...Array(BANK.length).keys()].filter(i => !selected.includes(i));
+        }
+        selected = selected.concat(shuffle(candidates).slice(0, need));
+      }
+      
+      state.order = selected;
+      // seenPool 记录已出的题目索引，全满后重置
+      selected.forEach(i => { if(!state.seenPool.includes(i)) state.seenPool.push(i); });
+      if(state.seenPool.length >= BANK.length) state.seenPool = [];
+
+      // 记录最近出过的题目（冷却窗口：30）
+      state.recentPool.push(...selected);
+      if(state.recentPool.length > 30) state.recentPool.splice(0, state.recentPool.length - 30);
+      
+      state.total = state.order.length;
+      els.total.textContent = String(state.total);
+      els.total2.textContent = String(state.total);
+      render();
+      syncSide();
+    }
+
+    function stopTimer(){
+      if(state.tHandle){ clearInterval(state.tHandle); state.tHandle = null; }
+    }
+
+    function startTimer(){
+      stopTimer();
+      if(!state.enableTimer) {
+        els.timeLeft.textContent = "—";
+        els.timeBar.style.width = "0%";
+        return;
+      }
+      state.tRemain = state.seconds;
+      els.timeLeft.textContent = String(state.tRemain);
+      els.timeBar.style.width = "0%";
+      state.tHandle = setInterval(()=>{
+        if(state.answered) return;
+        state.tRemain -= 1;
+        const p = Math.max(0, Math.min(1, 1 - state.tRemain/state.seconds));
+        els.timeBar.style.width = `${Math.round(p*100)}%`;
+        els.timeLeft.textContent = String(Math.max(0,state.tRemain));
+        if(state.tRemain <= 0){
+          stopTimer();
+          onTimeout();
+        }
+      }, 1000);
+    }
+
+    function onTimeout(){
+      if(state.answered) return;
+      state.answered = true;
+      state.streak = 0;
+      revealAnswer("时间到：揭晓答案", {autoWrong:true});
+      beep('bad');
+      els.nextBtn.disabled = false;
+      syncSide();
+    }
+
+    function render(){
+      const q = generateQuestion(state.order[state.idx]);
+      state.currentQ = q;
+      els.round.textContent = String(state.idx + 1);
+      els.done.textContent = String(state.idx);
+      concealInfo();
+      els.stemContent.innerHTML = `<span style="font-size:28px; font-weight:700;">${escapeHtml(q.stem)}</span>`;
+
+      els.options.innerHTML = "";
+      q.options.forEach((opt, i)=>{
+        const b = document.createElement("button");
+        b.className = "btn";
+        b.setAttribute("data-opt", opt.text);
+        b.innerHTML = `<span class="k">${i+1}. ${escapeHtml(opt.text)}</span><span class="hint">点击对接</span>`;
+        b.addEventListener("click", ()=> choose(opt.text));
+        els.options.appendChild(b);
+      });
+
+      state.answered = false;
+      els.nextBtn.disabled = true;
+      startTimer();
+    }
+
+    function choose(optText){
+      if(state.answered) return;
+      const q = state.currentQ;
+      state.answered = true;
+      stopTimer();
+
+      const isOk = optText === q.answer;
+      if(isOk){
+        state.correct += 1;
+        state.streak += 1;
+        const bonus = state.streak >= 3 ? 2 * (state.streak - 2) : 0;
+        state.score += (10 + bonus);
+        markButtons(optText, q.answer);
+        revealInfo(q);
+        toast(`正确 +${10+bonus}`);
+        beep('ok');
+      }else{
+        state.streak = 0;
+        markButtons(optText, q.answer);
+        revealInfo(q);
+        toast("差一点——答案已揭晓");
+        beep('bad');
+      }
+
+      els.nextBtn.disabled = false;
+      syncSide();
+
+      if(state.idx === state.total - 1){
+        els.nextBtn.textContent = "结算";
+      } else {
+        els.nextBtn.textContent = "下一题";
+      }
+    }
+
+    function markButtons(chosenText, answerText){
+      const buttons = [...els.options.querySelectorAll('.btn')];
+      for(const b of buttons){
+        const v = b.getAttribute('data-opt');
+        if(v === answerText) b.classList.add('correct');
+        if(v === chosenText && chosenText !== answerText) b.classList.add('wrong');
+        b.disabled = true;
+      }
+    }
+
+    function revealAnswer(msg="揭晓答案", extra={}){
+      const q = state.currentQ;
+      revealInfo(q);
+      const buttons = [...els.options.querySelectorAll('.btn')];
+      for(const b of buttons){
+        const v = b.getAttribute('data-opt');
+        if(v === q.answer) b.classList.add('correct');
+        b.disabled = true;
+      }
+      toast(msg);
+    }
+
+    function next(){
+      if(!state.answered) return;
+      if(state.idx >= state.total - 1){
+        finish();
+        return;
+      }
+      state.idx += 1;
+      render();
+      syncSide();
+    }
+
+    function skip(){
+      if(state.answered) return;
+      stopTimer();
+      state.answered = true;
+      state.streak = 0;
+      revealAnswer("已跳过：揭晓答案", {autoWrong:true});
+      els.nextBtn.disabled = false;
+      syncSide();
+    }
+
+    function finish(){
+      stopTimer();
+      const total = state.total;
+      const acc = total ? Math.round((state.correct/total)*100) : 0;
+      const msg = `练习结束：得分 ${state.score}，正确 ${state.correct}/${total}（${acc}%）`;
+
+      if(state.score > state.best){
+        state.best = state.score;
+        persist();
+      }
+
+      els.startOverlay.style.display = "flex";
+      const box = els.startOverlay.querySelector('.startBox');
+      box.querySelector('.title').textContent = "结算";
+      box.querySelector('.desc').innerHTML = `${escapeHtml(msg)}<br/>历史最高：<strong>${state.best}</strong>。`;
+      els.startBtn.textContent = "重新开始";
+      
+      // 动态增加“继续挑战”按钮
+      let continueBtn = $("continueBtn");
+      if(!continueBtn){
+        continueBtn = document.createElement('button');
+        continueBtn.id = "continueBtn";
+        continueBtn.className = "primary";
+        continueBtn.style.marginLeft = "10px";
+        continueBtn.textContent = "继续挑战 (再来10题)";
+        continueBtn.addEventListener('click', () => {
+          els.startOverlay.style.display = "none";
+          startRound(true);
+        });
+        els.startBtn.parentNode.appendChild(continueBtn);
+      }
+      continueBtn.style.display = "inline-block";
+
+      els.nextBtn.textContent = "下一题";
+      syncSide();
+    }
+
+    function syncSide(){
+      els.score.textContent = String(state.score);
+      els.streak.textContent = String(state.streak);
+      els.best.textContent = state.best ? String(state.best) : "—";
+      const done = state.idx + (state.answered ? 1 : 0);
+      els.done.textContent = String(Math.min(done, state.total));
+      const p = Math.round((Math.min(done, state.total) / state.total) * 100);
+      els.roundBar.style.width = `${p}%`;
+      const totalAnswered = Math.min(done, state.total);
+      els.acc.textContent = totalAnswered ? `${Math.round((state.correct/totalAnswered)*100)}%` : "—";
+      els.timerToggle.checked = state.enableTimer;
+      els.soundToggle.checked = state.enableSound;
+      els.secLabel.textContent = String(state.seconds);
+      if(!state.enableTimer){
+        els.timeLeft.textContent = "—";
+        els.timeBar.style.width = "0%";
+      } else {
+        els.timeLeft.textContent = state.answered ? "0" : String(state.tRemain);
+      }
+    }
+
+    function bind(){
+      els.nextBtn.addEventListener('click', next);
+      els.skipBtn.addEventListener('click', skip);
+      els.revealBtn.addEventListener('click', ()=>{
+        if(state.answered) return;
+        stopTimer();
+        state.answered = true;
+        state.streak = 0;
+        revealAnswer("揭晓：不计分");
+        els.nextBtn.disabled = false;
+        syncSide();
+      });
+      els.startBtn.addEventListener('click', ()=>{
+        els.startOverlay.style.display = "none";
+        const continueBtn = $("continueBtn");
+        if(continueBtn) continueBtn.style.display = "none";
+        startRound();
+      });
+      els.resetBtn.addEventListener('click', resetPersist);
+      els.timerToggle.addEventListener('change', (e)=>{
+        state.enableTimer = !!e.target.checked;
+        persist();
+        syncSide();
+      });
+      els.soundToggle.addEventListener('change', (e)=>{
+        state.enableSound = !!e.target.checked;
+        persist();
+        syncSide();
+      });
+
+      window.addEventListener('keydown', (e)=>{
+        if(els.startOverlay.style.display !== 'none' && e.key !== 'Escape'){
+          if(e.key === 'Enter') els.startBtn.click();
+          return;
+        }
+        if(e.key === 'Enter') { if(!els.nextBtn.disabled) els.nextBtn.click(); }
+        if(e.code === 'Space'){ e.preventDefault(); els.skipBtn.click(); }
+        if(e.key.toLowerCase() === 'r'){ els.revealBtn.click(); }
+        if(['1','2','3','4'].includes(e.key)){
+          const i = Number(e.key) - 1;
+          const btn = els.options.querySelectorAll('.btn')[i];
+          if(btn) btn.click();
+        }
+        if(e.key === 'Escape'){ /* noop: 已移除入场页 */ }
+      });
+    }
+
+    function init(){
+      loadPersist();
+      els.best.textContent = state.best ? String(state.best) : "—";
+      els.startOverlay.style.display = "none";
+      bind();
+      syncSide();
+      startRound();
+    }
+
+    init();
+  </script>
+</body>
+</html>
