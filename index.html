@@ -428,6 +428,39 @@
 
     .row{display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-top: 14px}
 
+    .seg{
+      display:inline-flex;
+      gap:6px;
+      padding:6px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.55);
+      border: 1px solid rgba(6,78,59,.14);
+    }
+    .segBtn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: transparent;
+      color:#111;
+      font-weight: 800;
+      letter-spacing: .4px;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:2px;
+      min-width: 120px;
+      transition: background .18s ease, transform .18s ease, box-shadow .18s ease;
+    }
+    .segBtn:hover{transform: translateY(-1px)}
+    .segBtn .sub{font-size:11px; color:#666; font-weight:600; letter-spacing:.2px}
+    .segBtn.active{
+      background: linear-gradient(180deg, rgba(6,78,59,.10), rgba(255,255,255,.72));
+      box-shadow: 0 10px 28px rgba(0,0,0,.10);
+      border: 1px solid rgba(215,180,106,.22);
+    }
+
     .toggle{
       display:flex; align-items:center; gap:10px;
       padding: 10px 12px;
@@ -557,6 +590,10 @@
               <div class="t" id="poemTitle">—</div>
               <div class="a" id="poemAuthor">—</div>
             </div>
+            <div class="pill" title="当前难度">
+              <span>难度</span>
+              <strong id="levelPill">初级</strong>
+            </div>
             <div class="pill" title="当前回合">
               <span>回合</span>
               <strong id="round">1</strong>
@@ -600,6 +637,22 @@
                 你将进入一段“舞台式”的<strong>诗句接龙</strong>练习：根据上句接出下句。<br/>
                 干扰项经过精选，字数与意境相近，挑战你的记忆力。
               </p>
+              <div class="row" style="justify-content:flex-start">
+                <div class="seg" role="group" aria-label="难度选择">
+                  <button class="segBtn" type="button" data-level="easy" id="levelEasy">
+                    <span>初级</span>
+                    <span class="sub" id="countEasy">—</span>
+                  </button>
+                  <button class="segBtn" type="button" data-level="medium" id="levelMedium">
+                    <span>中级</span>
+                    <span class="sub" id="countMedium">—</span>
+                  </button>
+                  <button class="segBtn" type="button" data-level="hard" id="levelHard">
+                    <span>高级</span>
+                    <span class="sub" id="countHard">—</span>
+                  </button>
+                </div>
+              </div>
               <div class="row">
                 <label class="toggle">
                   <input type="checkbox" id="timerToggle" checked>
@@ -1613,6 +1666,64 @@
       }
     ];
 
+    // --- Difficulty Levels ---
+    const LEVEL_META = {
+      easy: { label: "初级", desc: "常见的耳熟能详名句" },
+      medium: { label: "中级", desc: "初高中必背中稍有难度的非高频句" },
+      hard: { label: "高级", desc: "生僻字多、偏门或用典较深的高难度句" },
+    };
+
+    const EASY_TITLES = new Set([
+      "咏鹅","春晓","静夜思","登鹳雀楼","清明","悯农其一","悯农其二","游子吟","江雪",
+      "枫桥夜泊","绝句","赠汪伦","望庐山瀑布","早发白帝城","望天门山","村居","小池",
+      "元日","回乡偶书","咏柳","题西林壁","饮湖上初晴后雨","晓出净慈寺送林子方","江畔独步寻花",
+      "登飞来峰","观书有感","游山西村","出塞","九月九日忆山东兄弟","别董大","石灰吟","己亥杂诗（其五）",
+      "滕王阁序（名句）","离骚（名句二）","离骚（名句一）"
+    ]);
+
+    const HARD_TITLES = new Set([
+      "滕王阁序（节选）","阿房宫赋（节选）","赤壁赋（节选）","陈情表（节选）","逍遥游（节选）",
+      "兰亭集序（节选）","小石潭记（节选）","锦瑟（节选）","梦游天姥吟留别（节选）"
+    ]);
+
+    const RARE_CHAR_RE = /[噫吁嚱兮寤寐荇蒹葭溯洄宛抟扶摇蜉蝣兀衅闵凶阡陌锲镂箸麾炙貂裘鳞鹜滟簟蒌蒿箫阑珊衾潺潺茱萸曈]/;
+    const PROSE_TITLE_RE = /(序|赋|表|说|记|游|策|传|集序)/;
+
+    function inferLevel(p){
+      if(EASY_TITLES.has(p.title)) return "easy";
+      if(HARD_TITLES.has(p.title)) return "hard";
+
+      let score = 0;
+      const len = String(p.line || "").length;
+      if(len >= 80) score += 4;
+      else if(len >= 60) score += 3;
+      else if(len >= 45) score += 2;
+      else if(len >= 32) score += 1;
+
+      // 文言/骈文/长篇节选整体更难
+      if(PROSE_TITLE_RE.test(p.title) && /（节选）/.test(p.title)) score += 3;
+      else if(/（节选）/.test(p.title)) score += 1;
+
+      if(/典故|骈文|哲思|用典|朦胧|幽微|沉郁|孤愤|瑰丽/.test(p.hint || "")) score += 1;
+      if(RARE_CHAR_RE.test(p.line || "")) score += 1;
+
+      if(score >= 4) return "hard";
+      if(score >= 2) return "medium";
+      return "easy";
+    }
+
+    function prepareBankLevels(){
+      const counts = { easy: 0, medium: 0, hard: 0 };
+      for(const p of BANK){
+        p.level = inferLevel(p);
+        if(!counts[p.level]) counts[p.level] = 0;
+        counts[p.level] += 1;
+      }
+      return counts;
+    }
+
+    const LEVEL_COUNTS = prepareBankLevels();
+
     // --- Segment Pool (for distractor generation) ---
     const SEG_SPLIT_RE = /[，。！？；：]/;
     function splitSegments(line){
@@ -1622,32 +1733,36 @@
         .filter(Boolean);
     }
 
-    const SEGMENT_POOL = BANK.flatMap((p, poemIndex) => {
-      const segments = splitSegments(p.line);
-      return segments.map((text, i) => {
-        // 获取完整诗句上下文
-        let context = text;
-        if (i % 2 === 0 && i + 1 < segments.length) {
-          context = text + "，" + segments[i + 1] + "。";
-        } else if (i % 2 === 1 && i - 1 >= 0) {
-          context = segments[i - 1] + "，" + text + "。";
+    function buildSegmentIndex(poemIndices){
+      const segmentPool = [];
+      const segmentsByTitle = new Map();
+      for(const poemIndex of poemIndices){
+        const p = BANK[poemIndex];
+        const segments = splitSegments(p.line);
+        for(let i=0;i<segments.length;i++){
+          const text = segments[i];
+          let context = text;
+          if(i % 2 === 0 && i + 1 < segments.length){
+            context = text + "，" + segments[i + 1] + "。";
+          } else if(i % 2 === 1 && i - 1 >= 0){
+            context = segments[i - 1] + "，" + text + "。";
+          }
+          const seg = {
+            poemIndex,
+            title: p.title,
+            author: p.author,
+            text,
+            context,
+            hint: p.hint,
+            level: p.level,
+          };
+          segmentPool.push(seg);
+          if(!segmentsByTitle.has(seg.title)) segmentsByTitle.set(seg.title, []);
+          segmentsByTitle.get(seg.title).push(seg);
         }
-        return {
-          poemIndex,
-          title: p.title,
-          author: p.author,
-          text,
-          context,
-          hint: p.hint
-        };
-      });
-    });
-
-    const SEGMENTS_BY_TITLE = new Map();
-    SEGMENT_POOL.forEach(seg => {
-      if(!SEGMENTS_BY_TITLE.has(seg.title)) SEGMENTS_BY_TITLE.set(seg.title, []);
-      SEGMENTS_BY_TITLE.get(seg.title).push(seg);
-    });
+      }
+      return { segmentPool, segmentsByTitle };
+    }
 
     function pickOne(arr){
       return arr[Math.floor(Math.random() * arr.length)];
@@ -1688,6 +1803,13 @@
       sourcesPanel: $("sourcesPanel"),
       sourcesTitle: $("sourcesTitle"),
       sourceList: $("sourceList"),
+      levelPill: $("levelPill"),
+      levelEasy: $("levelEasy"),
+      levelMedium: $("levelMedium"),
+      levelHard: $("levelHard"),
+      countEasy: $("countEasy"),
+      countMedium: $("countMedium"),
+      countHard: $("countHard"),
     };
 
     const STORE_KEY = "poetry_contest_v2";
@@ -1707,8 +1829,11 @@
       tRemain: 15,
       tHandle: null,
       best: 0,
-      seenPool: [], // 记录已出的题目索引
-      recentPool: [], // 最近出过的题目（用于冷却，避免刚做完就重复）
+      level: "easy",
+      activeIndices: [],
+      segmentIndex: null,
+      seenPoolByLevel: { easy: [], medium: [], hard: [] },
+      recentPoolByLevel: { easy: [], medium: [], hard: [] },
     };
 
     function loadPersist(){
@@ -1719,6 +1844,7 @@
         if(typeof d.best === 'number') state.best = d.best;
         if(typeof d.enableTimer === 'boolean') state.enableTimer = d.enableTimer;
         if(typeof d.enableSound === 'boolean') state.enableSound = d.enableSound;
+        if(typeof d.level === 'string' && LEVEL_META[d.level]) state.level = d.level;
       } catch(_){/* ignore */}
     }
 
@@ -1726,7 +1852,8 @@
       localStorage.setItem(STORE_KEY, JSON.stringify({
         best: state.best,
         enableTimer: state.enableTimer,
-        enableSound: state.enableSound
+        enableSound: state.enableSound,
+        level: state.level,
       }));
     }
 
@@ -1735,11 +1862,13 @@
       state.best = 0;
       state.enableTimer = true;
       state.enableSound = true;
-      state.seenPool = [];
-      state.recentPool = [];
+      state.level = "easy";
+      state.seenPoolByLevel = { easy: [], medium: [], hard: [] };
+      state.recentPoolByLevel = { easy: [], medium: [], hard: [] };
       persist();
       toast("已清空记录");
       syncSide();
+      syncLevelUi();
     }
 
     function shuffle(arr){
@@ -1762,8 +1891,20 @@
       const stem = segments[qIdx];
       const answerText = segments[qIdx + 1];
       
+      const idx = state.segmentIndex;
+      const segmentPool = idx ? idx.segmentPool : [];
+      const segmentsByTitle = idx ? idx.segmentsByTitle : new Map();
+
       // Construct correct option object
-      const answerObj = SEGMENT_POOL.find(s => s.poemIndex === poemIndex && s.text === answerText);
+      const answerObj = segmentPool.find(s => s.poemIndex === poemIndex && s.text === answerText) || {
+        poemIndex,
+        title: poem.title,
+        author: poem.author,
+        text: answerText,
+        context: `${stem}，${answerText}。`,
+        hint: poem.hint,
+        level: poem.level,
+      };
 
       // Distractor logic
       const distractors = [];
@@ -1771,13 +1912,15 @@
       const targetTitle = poem.title;
 
       // 1. Different poems
-      const validOtherPoemTitles = Array.from(SEGMENTS_BY_TITLE.keys()).filter(t => t !== targetTitle);
+      const validOtherPoemTitles = Array.from(segmentsByTitle.keys()).filter(t => t !== targetTitle);
       const shuffledPoemTitles = shuffle(validOtherPoemTitles);
 
       for (const otherTitle of shuffledPoemTitles) {
         if (distractors.length >= 3) break;
-        const candidateSegments = SEGMENTS_BY_TITLE.get(otherTitle)
-          .filter(seg => seg.text.length === targetLen);
+        const base = segmentsByTitle.get(otherTitle) || [];
+        let candidateSegments = base.filter(seg => seg.text.length === targetLen);
+        if(candidateSegments.length === 0) candidateSegments = base.filter(seg => Math.abs(seg.text.length - targetLen) <= 1);
+        if(candidateSegments.length === 0) candidateSegments = base;
         
         if (candidateSegments.length > 0) {
           const picked = pickOne(candidateSegments);
@@ -1789,11 +1932,16 @@
 
       // 2. Fallback
       if (distractors.length < 3) {
-        const pool = SEGMENT_POOL.filter(s => 
+        let pool = segmentPool.filter(s => 
           s.title !== targetTitle && 
-          s.text.length === targetLen && 
           !distractors.some(d => d.text === s.text)
         );
+        let sameLen = pool.filter(s => s.text.length === targetLen);
+        if(sameLen.length >= (3 - distractors.length)) pool = sameLen;
+        else {
+          const nearLen = pool.filter(s => Math.abs(s.text.length - targetLen) <= 1);
+          if(nearLen.length >= (3 - distractors.length)) pool = nearLen;
+        }
         const shuffledPool = shuffle(pool);
         while (distractors.length < 3 && shuffledPool.length > 0) {
           distractors.push(shuffledPool.pop());
@@ -1802,11 +1950,9 @@
 
       // 3. Last Resort Fallback
       if (distractors.length < 3) {
-        const anyPool = SEGMENT_POOL.filter(s => s.text !== answerText && !distractors.some(d => d.text === s.text));
+        const anyPool = segmentPool.filter(s => s.text !== answerText && !distractors.some(d => d.text === s.text));
         const shuffledAny = shuffle(anyPool);
-        while (distractors.length < 3 && shuffledAny.length > 0) {
-          distractors.push(shuffledAny.pop());
-        }
+        while (distractors.length < 3 && shuffledAny.length > 0) distractors.push(shuffledAny.pop());
       }
 
       const options = shuffle([answerObj, ...distractors.slice(0, 3)]);
@@ -1818,8 +1964,41 @@
         answer: answerText,
         options: options,
         hint: poem.hint,
-        fullLine: poem.line
+        fullLine: poem.line,
+        level: poem.level,
       };
+    }
+
+    function getActiveIndices(level){
+      const res = [];
+      for(let i=0;i<BANK.length;i++) if(BANK[i].level === level) res.push(i);
+      return res;
+    }
+
+    function syncLevelUi(){
+      els.levelPill.textContent = LEVEL_META[state.level]?.label || "初级";
+      els.countEasy.textContent = `${LEVEL_COUNTS.easy || 0} 题`;
+      els.countMedium.textContent = `${LEVEL_COUNTS.medium || 0} 题`;
+      els.countHard.textContent = `${LEVEL_COUNTS.hard || 0} 题`;
+      [els.levelEasy, els.levelMedium, els.levelHard].forEach(b => b && b.classList.remove('active'));
+      const map = { easy: els.levelEasy, medium: els.levelMedium, hard: els.levelHard };
+      if(map[state.level]) map[state.level].classList.add('active');
+    }
+
+    function enterIdle(){
+      stopTimer();
+      state.order = [];
+      state.idx = 0;
+      state.total = 10;
+      els.round.textContent = "0";
+      els.total.textContent = "10";
+      els.total2.textContent = "10";
+      els.done.textContent = "0";
+      els.options.innerHTML = "";
+      els.stemContent.innerHTML = `<span style="font-size:14px; color:var(--muted)">请选择难度并点击“开始练习”。</span>`;
+      concealInfo();
+      els.nextBtn.disabled = true;
+      syncSide();
     }
 
     function concealInfo(){
@@ -1891,50 +2070,53 @@
         state.score = 0;
         state.streak = 0;
         state.correct = 0;
-        state.seenPool = [];
-        state.recentPool = [];
       }
       state.idx = 0;
       state.answered = false;
+
+      state.activeIndices = getActiveIndices(state.level);
+      let roundSize = Math.min(10, state.activeIndices.length);
+      if(roundSize <= 0){
+        toast("该难度暂无题目，已切换到初级");
+        state.level = "easy";
+        persist();
+        syncLevelUi();
+        state.activeIndices = getActiveIndices(state.level);
+        roundSize = Math.min(10, state.activeIndices.length);
+      }
+
+      state.segmentIndex = buildSegmentIndex(state.activeIndices);
+
+      const seenPool = state.seenPoolByLevel[state.level] || (state.seenPoolByLevel[state.level] = []);
+      const recentPool = state.recentPoolByLevel[state.level] || (state.recentPoolByLevel[state.level] = []);
       
       // 去重逻辑：优先从没见过的池子里选，且避开最近出的 20 道（若题库足够）
       let available = [];
-      for(let i=0; i<BANK.length; i++) {
-        if(!state.seenPool.includes(i) && !state.recentPool.includes(i)) {
-          available.push(i);
-        }
-      }
+      available = state.activeIndices.filter(i => !seenPool.includes(i) && !recentPool.includes(i));
       
       // 如果满足冷却条件的题目不足 10 道，则放宽冷却限制
-      if(available.length < 10) {
-        available = [];
-        for(let i=0; i<BANK.length; i++) {
-          if(!state.seenPool.includes(i)) available.push(i);
-        }
-      }
+      if(available.length < roundSize) available = state.activeIndices.filter(i => !seenPool.includes(i));
 
       let selected = [];
-      if(available.length >= 10) {
-        selected = shuffle(available).slice(0, 10);
+      if(available.length >= roundSize) {
+        selected = shuffle(available).slice(0, roundSize);
       } else {
-        // 不足 10 道：先拿完 available，再从全集补齐；尽量避开最近出过的题目
+        // 不足 roundSize 道：先拿完 available，再从同难度全集补齐；尽量避开最近出过的题目
         selected = shuffle(available);
-        const need = 10 - selected.length;
-        let candidates = [...Array(BANK.length).keys()].filter(i => !selected.includes(i) && !state.recentPool.includes(i));
-        if(candidates.length < need) {
-          candidates = [...Array(BANK.length).keys()].filter(i => !selected.includes(i));
-        }
+        const need = roundSize - selected.length;
+        let candidates = state.activeIndices.filter(i => !selected.includes(i) && !recentPool.includes(i));
+        if(candidates.length < need) candidates = state.activeIndices.filter(i => !selected.includes(i));
         selected = selected.concat(shuffle(candidates).slice(0, need));
       }
       
       state.order = selected;
-      // seenPool 记录已出的题目索引，全满后重置
-      selected.forEach(i => { if(!state.seenPool.includes(i)) state.seenPool.push(i); });
-      if(state.seenPool.length >= BANK.length) state.seenPool = [];
+      // seenPool 记录已出的题目索引，全满后重置（按难度分开）
+      selected.forEach(i => { if(!seenPool.includes(i)) seenPool.push(i); });
+      if(seenPool.length >= state.activeIndices.length) seenPool.splice(0, seenPool.length);
 
       // 记录最近出过的题目（冷却窗口：30）
-      state.recentPool.push(...selected);
-      if(state.recentPool.length > 30) state.recentPool.splice(0, state.recentPool.length - 30);
+      recentPool.push(...selected);
+      if(recentPool.length > 30) recentPool.splice(0, recentPool.length - 30);
       
       state.total = state.order.length;
       els.total.textContent = String(state.total);
@@ -2118,6 +2300,7 @@
     }
 
     function syncSide(){
+      els.levelPill.textContent = LEVEL_META[state.level]?.label || "初级";
       els.score.textContent = String(state.score);
       els.streak.textContent = String(state.streak);
       els.best.textContent = state.best ? String(state.best) : "—";
@@ -2156,6 +2339,17 @@
         if(continueBtn) continueBtn.style.display = "none";
         startRound();
       });
+
+      [els.levelEasy, els.levelMedium, els.levelHard].forEach(btn => {
+        if(!btn) return;
+        btn.addEventListener('click', ()=>{
+          const lv = btn.getAttribute('data-level');
+          if(!LEVEL_META[lv]) return;
+          state.level = lv;
+          persist();
+          syncLevelUi();
+        });
+      });
       els.resetBtn.addEventListener('click', resetPersist);
       els.timerToggle.addEventListener('change', (e)=>{
         state.enableTimer = !!e.target.checked;
@@ -2188,10 +2382,10 @@
     function init(){
       loadPersist();
       els.best.textContent = state.best ? String(state.best) : "—";
-      els.startOverlay.style.display = "none";
       bind();
+      syncLevelUi();
       syncSide();
-      startRound();
+      enterIdle();
     }
 
     init();
