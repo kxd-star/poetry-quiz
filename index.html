@@ -1890,9 +1890,19 @@
 
       // 随机决定出题方向：true=给出上半句选下半句，false=给出下半句选上半句
       const forward = Math.random() < 0.5;
-      const qIdx = forward
-        ? Math.floor(Math.random() * (segments.length - 1))
-        : Math.floor(Math.random() * (segments.length - 1)) + 1;
+      // 联内配对：偶数位是上句，奇数位是下句，只在同一联内配对
+      let qIdx;
+      if (forward) {
+        const evenIndices = [];
+        for (let i = 0; i < segments.length - 1; i += 2) evenIndices.push(i);
+        if (evenIndices.length === 0) return null;
+        qIdx = evenIndices[Math.floor(Math.random() * evenIndices.length)];
+      } else {
+        const oddIndices = [];
+        for (let i = 1; i < segments.length; i += 2) oddIndices.push(i);
+        if (oddIndices.length === 0) return null;
+        qIdx = oddIndices[Math.floor(Math.random() * oddIndices.length)];
+      }
       const stem = segments[qIdx];
       const answerText = forward ? segments[qIdx + 1] : segments[qIdx - 1];
       const directionLabel = forward ? "请接下一句" : "请接上一句";
