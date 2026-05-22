@@ -15,9 +15,8 @@
       --ink:#dcfce7;
       --paper:#ffffff;
       --paper2:#f8fafc;
-      --gold:#059669;
-      --gold2:#064e3b;
-      --jade:#065f46;
+      --emerald:#059669;
+      --emerald-dark:#064e3b;
       --crimson:#dc2626;
       --fg:#111;
       --muted:#4b5563;
@@ -122,7 +121,7 @@
       font-size: 44px;
       letter-spacing: 1px;
       line-height:1;
-      color: var(--gold2);
+      color: var(--emerald-dark);
       text-shadow: 0 10px 30px rgba(215,180,106,.18);
     }
 
@@ -146,7 +145,7 @@
 
     .badge i{
       width:8px; height:8px; border-radius:50%;
-      background: linear-gradient(180deg, var(--gold2), var(--gold));
+      background: linear-gradient(180deg, var(--emerald-dark), var(--emerald));
       box-shadow: 0 0 0 4px rgba(215,180,106,.16);
     }
 
@@ -190,7 +189,7 @@
       font-size: 12px;
     }
 
-    .pill strong{color: var(--jade); font-weight:700; letter-spacing:.4px}
+    .pill strong{color: var(--emerald); font-weight:700; letter-spacing:.4px}
 
     .question{
       margin-top:12px;
@@ -280,7 +279,7 @@
       color: #ffffff;
       font-weight: 800;
       letter-spacing:.6px;
-      background: linear-gradient(180deg, var(--gold2), var(--gold));
+      background: linear-gradient(180deg, var(--emerald-dark), var(--emerald));
       box-shadow: 0 16px 40px rgba(215,180,106,.26);
       transition: transform .18s ease, filter .18s ease;
       white-space:nowrap;
@@ -328,7 +327,7 @@
       background: radial-gradient(260px 160px at 30% 20%, rgba(243,215,154,.10), transparent 60%);
       opacity:.9;
     }
-    .stat .v{position:relative; z-index:1; font-size: 22px; font-weight: 800; letter-spacing:.8px; color: var(--gold2)}
+    .stat .v{position:relative; z-index:1; font-size: 22px; font-weight: 800; letter-spacing:.8px; color: var(--emerald-dark)}
     .stat .k{position:relative; z-index:1; margin-top:4px; font-size: 12px; color: #666}
 
     .timeline{
@@ -421,7 +420,7 @@
       font-family: "Ma Shan Zheng", cursive;
       font-size: 42px;
       margin: 6px 0 4px;
-      color: var(--gold2);
+      color: var(--emerald-dark);
       letter-spacing: 1px;
     }
     .startBox .desc{margin:0; color: #555; line-height:1.7; font-size: 13px}
@@ -469,7 +468,7 @@
       border: 1px solid rgba(6,78,59,.14);
       user-select:none;
     }
-    .toggle input{accent-color: var(--gold)}
+    .toggle input{accent-color: var(--emerald)}
 
     .footer{
       margin-top: 10px;
@@ -486,6 +485,7 @@
     a{color: rgba(243,215,154,.92); text-decoration:none}
     a:hover{text-decoration:underline}
 
+    .startOverlay.hidden{display:none}
     .srOnly{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0}
 
     .revealPanel{
@@ -523,7 +523,7 @@
     }
     .sources h3 {
       font-size: 13px;
-      color: var(--gold2);
+      color: var(--emerald-dark);
       margin: 0 0 10px 0;
       font-weight: 700;
       letter-spacing: 0.5px;
@@ -564,7 +564,7 @@
       background: rgba(16,185,129,0.05);
     }
     .source-item.is-correct .opt-text {
-      color: var(--gold2);
+      color: var(--emerald-dark);
     }
   </style>
 </head>
@@ -603,7 +603,7 @@
           </div>
 
           <div class="question" id="questionText">
-            <div style="font-size:14px; color:var(--muted); margin-bottom:8px;">请接下一句：</div>
+            <div id="directionLabel" style="font-size:14px; color:var(--muted); margin-bottom:8px;"></div>
             <div id="stemContent">加载中…</div>
           </div>
 
@@ -1773,6 +1773,7 @@
       poemTitle: $("poemTitle"),
       poemAuthor: $("poemAuthor"),
       questionText: $("questionText"),
+      directionLabel: $("directionLabel"),
       stemContent: $("stemContent"),
       options: $("options"),
       round: $("round"),
@@ -1884,24 +1885,32 @@
     function generateQuestion(poemIndex) {
       const poem = BANK[poemIndex];
       const segments = splitSegments(poem.line);
-      
+
       if (segments.length < 2) return null;
 
-      const qIdx = Math.floor(Math.random() * (segments.length - 1));
+      // 随机决定出题方向：true=给出上半句选下半句，false=给出下半句选上半句
+      const forward = Math.random() < 0.5;
+      const qIdx = forward
+        ? Math.floor(Math.random() * (segments.length - 1))
+        : Math.floor(Math.random() * (segments.length - 1)) + 1;
       const stem = segments[qIdx];
-      const answerText = segments[qIdx + 1];
-      
+      const answerText = forward ? segments[qIdx + 1] : segments[qIdx - 1];
+      const directionLabel = forward ? "请接下一句" : "请接上一句";
+
       const idx = state.segmentIndex;
       const segmentPool = idx ? idx.segmentPool : [];
       const segmentsByTitle = idx ? idx.segmentsByTitle : new Map();
 
       // Construct correct option object
+      const answerContext = forward
+        ? `${stem}，${answerText}。`
+        : `${answerText}，${stem}。`;
       const answerObj = segmentPool.find(s => s.poemIndex === poemIndex && s.text === answerText) || {
         poemIndex,
         title: poem.title,
         author: poem.author,
         text: answerText,
-        context: `${stem}，${answerText}。`,
+        context: answerContext,
         hint: poem.hint,
         level: poem.level,
       };
@@ -1921,7 +1930,7 @@
         let candidateSegments = base.filter(seg => seg.text.length === targetLen);
         if(candidateSegments.length === 0) candidateSegments = base.filter(seg => Math.abs(seg.text.length - targetLen) <= 1);
         if(candidateSegments.length === 0) candidateSegments = base;
-        
+
         if (candidateSegments.length > 0) {
           const picked = pickOne(candidateSegments);
           if (!distractors.some(d => d.text === picked.text)) {
@@ -1932,8 +1941,8 @@
 
       // 2. Fallback
       if (distractors.length < 3) {
-        let pool = segmentPool.filter(s => 
-          s.title !== targetTitle && 
+        let pool = segmentPool.filter(s =>
+          s.title !== targetTitle &&
           !distractors.some(d => d.text === s.text)
         );
         let sameLen = pool.filter(s => s.text.length === targetLen);
@@ -1966,6 +1975,8 @@
         hint: poem.hint,
         fullLine: poem.line,
         level: poem.level,
+        directionLabel,
+        forward,
       };
     }
 
@@ -2011,7 +2022,7 @@
       els.sourceList.innerHTML = "";
     }
 
-    function revealInfo(q){
+    function revealInfo(q, chosenText){
       els.poemTitle.textContent = q.title;
       els.poemAuthor.textContent = q.author;
       els.hintBox.textContent = q.hint;
@@ -2022,16 +2033,32 @@
       // Render sources for all options
       els.sourcesTitle.textContent = "选项溯源 · 拓展学习";
       els.sourceList.innerHTML = "";
+
+      const chosenObj = q.options.find(o => o.text === chosenText);
+
+      if (chosenText) {
+        const summary = document.createElement("div");
+        if (chosenText === q.answer) {
+          summary.innerHTML = `<div style="margin-bottom:10px;font-size:13px;color:var(--emerald-dark);font-weight:700;">✓ 回答正确——“${escapeHtml(chosenText)}”是本题下句</div>`;
+        } else if (chosenObj) {
+          summary.innerHTML = `<div style="margin-bottom:10px;font-size:13px;color:#b8423a;font-weight:700;">✗ 你选了“${escapeHtml(chosenText)}”——这句出自《${escapeHtml(chosenObj.title)}》，不是本题接句</div>`;
+        }
+        els.sourceList.appendChild(summary);
+      }
+
       q.options.forEach(opt => {
         const item = document.createElement("div");
         const isCorrect = opt.text === q.answer;
+        const isChosen = opt.text === chosenText;
         item.className = `source-item ${isCorrect ? 'is-correct' : ''}`;
-        
-        // 如果是正确答案，加个小徽章
-        const badge = isCorrect ? '<span style="color:var(--gold); font-size:10px; margin-left:4px; border:1px solid var(--gold); padding:0 4px; border-radius:4px;">正确项</span>' : '';
-        
+
+        const badges = [];
+        if(isCorrect) badges.push('<span style="color:var(--emerald);font-size:10px;border:1px solid var(--emerald);padding:0 4px;border-radius:4px;">正确项</span>');
+        if(isChosen && !isCorrect) badges.push('<span style="color:#b8423a;font-size:10px;border:1px solid #b8423a;padding:0 4px;border-radius:4px;">你的选择</span>');
+        const badgeHtml = badges.length ? ' ' + badges.join(' ') : '';
+
         item.innerHTML = `
-          <span class="opt-text">“${escapeHtml(opt.context)}”${badge}</span>
+          <span class="opt-text">“${escapeHtml(opt.context)}”${badgeHtml}</span>
           <div class="opt-meta">${escapeHtml(opt.author)} · 《${escapeHtml(opt.title)}》</div>
           <span class="opt-hint">${escapeHtml(opt.hint)}</span>
         `;
@@ -2085,7 +2112,14 @@
         roundSize = Math.min(10, state.activeIndices.length);
       }
 
-      state.segmentIndex = buildSegmentIndex(state.activeIndices);
+      const cacheKey = state.level + "_" + state.activeIndices.join(",");
+      if (state._segmentCache?.[cacheKey]) {
+        state.segmentIndex = state._segmentCache[cacheKey];
+      } else {
+        state.segmentIndex = buildSegmentIndex(state.activeIndices);
+        if (!state._segmentCache) state._segmentCache = {};
+        state._segmentCache[cacheKey] = state.segmentIndex;
+      }
 
       const seenPool = state.seenPoolByLevel[state.level] || (state.seenPoolByLevel[state.level] = []);
       const recentPool = state.recentPoolByLevel[state.level] || (state.recentPoolByLevel[state.level] = []);
@@ -2168,6 +2202,7 @@
       els.round.textContent = String(state.idx + 1);
       els.done.textContent = String(state.idx);
       concealInfo();
+      els.directionLabel.textContent = q.directionLabel + "：";
       els.stemContent.innerHTML = `<span style="font-size:28px; font-weight:700;">${escapeHtml(q.stem)}</span>`;
 
       els.options.innerHTML = "";
@@ -2198,13 +2233,13 @@
         const bonus = state.streak >= 3 ? 2 * (state.streak - 2) : 0;
         state.score += (10 + bonus);
         markButtons(optText, q.answer);
-        revealInfo(q);
+        revealInfo(q, optText);
         toast(`正确 +${10+bonus}`);
         beep('ok');
       }else{
         state.streak = 0;
         markButtons(optText, q.answer);
-        revealInfo(q);
+        revealInfo(q, optText);
         toast("差一点——答案已揭晓");
         beep('bad');
       }
@@ -2273,7 +2308,7 @@
         persist();
       }
 
-      els.startOverlay.style.display = "flex";
+      els.startOverlay.classList.remove("hidden");
       const box = els.startOverlay.querySelector('.startBox');
       box.querySelector('.title').textContent = "结算";
       box.querySelector('.desc').innerHTML = `${escapeHtml(msg)}<br/>历史最高：<strong>${state.best}</strong>。`;
@@ -2288,7 +2323,7 @@
         continueBtn.style.marginLeft = "10px";
         continueBtn.textContent = "继续挑战 (再来10题)";
         continueBtn.addEventListener('click', () => {
-          els.startOverlay.style.display = "none";
+          els.startOverlay.classList.add("hidden");
           startRound(true);
         });
         els.startBtn.parentNode.appendChild(continueBtn);
@@ -2334,9 +2369,13 @@
         syncSide();
       });
       els.startBtn.addEventListener('click', ()=>{
-        els.startOverlay.style.display = "none";
+        els.startOverlay.classList.add("hidden");
         const continueBtn = $("continueBtn");
         if(continueBtn) continueBtn.style.display = "none";
+        const box = els.startOverlay.querySelector('.startBox');
+        box.querySelector('.title').textContent = "设置";
+        box.querySelector('.desc').innerHTML = '你将进入一段"舞台式"的<strong>诗句接龙</strong>练习：根据上句接出下句。<br/>干扰项经过精选，字数与意境相近，挑战你的记忆力。';
+        els.startBtn.textContent = "开始练习";
         startRound();
       });
 
